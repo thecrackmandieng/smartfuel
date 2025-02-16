@@ -1,64 +1,70 @@
 <div class="login-container">
-    <div class="login-content">
-      <form (ngSubmit)="onSubmit()">
-        <div class="form-group">
-          <label for="code">CODE</label>
-          <div class="code-inputs-wrapper">
-            <div class="code-inputs">
-              <input
-                type="text"
-                maxlength="1"
-                class="code-input"
-                [(ngModel)]="credentials.code1"
-                name="code1"
-                (input)="onInputChange($event, 'code1', input1)"
-                (keydown)="filterInput($event, 'code1', input1)"
-                (focus)="showTemporaryValue(input1)"
-                #input1
-                required
-              />
-              <input
-                type="text"
-                maxlength="1"
-                class="code-input"
-                [(ngModel)]="credentials.code2"
-                name="code2"
-                (input)="onInputChange($event, 'code2', input2)"
-                (keydown)="filterInput($event, 'code2', input2)"
-                (focus)="showTemporaryValue(input2)"
-                #input2
-                required
-              />
-              <input
-                type="text"
-                maxlength="1"
-                class="code-input"
-                [(ngModel)]="credentials.code3"
-                name="code3"
-                (input)="onInputChange($event, 'code3', input3)"
-                (keydown)="filterInput($event, 'code3', input3)"
-                (focus)="showTemporaryValue(input3)"
-                #input3
-                required
-              />
-              <input
-                type="text"
-                maxlength="1"
-                class="code-input"
-                [(ngModel)]="credentials.code4"
-                name="code4"
-                (input)="onInputChange($event, 'code4', input4)"
-                (keydown)="filterInput($event, 'code4', input4)"
-                (focus)="showTemporaryValue(input4)"
-                #input4
-                required
-              />
-            </div>
+  <div class="login-content">
+    <form (ngSubmit)="onSubmit()" #loginForm="ngForm">
+      <div class="form-group">
+        <label for="code" class="code-label">CODE</label>
+        <div class="code-inputs-wrapper" *ngIf="!isLocked; else lockedTemplate">
+          <div class="code-inputs">
+            <input
+              type="text"
+              maxlength="1"
+              class="code-input"
+              [(ngModel)]="credentials.code1"
+              name="code1"
+              (input)="onInputChange($event, 'code1', input2)"
+              (keydown)="filterInput($event, 'code1', input1, null)"
+              (focus)="showTemporaryValue(input1)"
+              #input1
+              required
+            />
+            <input
+              type="text"
+              maxlength="1"
+              class="code-input"
+              [(ngModel)]="credentials.code2"
+              name="code2"
+              (input)="onInputChange($event, 'code2', input3)"
+              (keydown)="filterInput($event, 'code2', input2, input1)"
+              (focus)="showTemporaryValue(input2)"
+              #input2
+              required
+            />
+            <input
+              type="text"
+              maxlength="1"
+              class="code-input"
+              [(ngModel)]="credentials.code3"
+              name="code3"
+              (input)="onInputChange($event, 'code3', input4)"
+              (keydown)="filterInput($event, 'code3', input3, input2)"
+              (focus)="showTemporaryValue(input3)"
+              #input3
+              required
+            />
+            <input
+              type="text"
+              maxlength="1"
+              class="code-input"
+              [(ngModel)]="credentials.code4"
+              name="code4"
+              (input)="onInputChange($event, 'code4', null)"
+              (keydown)="filterInput($event, 'code4', input4, input3)"
+              (focus)="showTemporaryValue(input4)"
+              #input4
+              required
+            />
           </div>
         </div>
-      </form>
-      <div class="connect-with">
-        <span>CONNECTER AVEC CARTE</span>
+        <ng-template #lockedTemplate>
+          <div class="locked-message">
+            Réessayer dans {{ lockTimeLeft }} secondes
+            <div class="progress-bar">
+              <div class="progress" [style.width.%]="progress"></div>
+            </div>
+          </div>
+        </ng-template>
       </div>
-    </div>
+      <div *ngIf="errorMessage" class="error-message">{{ errorMessage }}</div>
+    </form>
   </div>
+</div>

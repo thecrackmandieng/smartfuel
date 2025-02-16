@@ -4,9 +4,16 @@
     <meta charset="UTF-8" />
     <meta http-equiv="X-UA-Compatible" content="IE=edge" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <base href="/" />
     <title>Gestion Intelligente des Stations-Service</title>
   </head>
   <body>
-    <app-root></app-root> <!-- Point d'entrée de l'application -->
+    <app-root></app-root>
+
+    <!-- Les scripts doivent être placés après l'élément <app-root> -->
+    <script src="polyfills.js" type="module"></script>
+    <script src="scripts.js" defer></script>
+    <script src="main.js" type="module"></script>
   </body>
 </html>

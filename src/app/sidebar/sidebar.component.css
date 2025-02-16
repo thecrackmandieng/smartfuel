@@ -1,31 +1,60 @@
 .sidebar {
-    width: 200px;
-    position: fixed;
-    left: 0;
-    top: 0;
-    height: 100%;
-    background-color: #333;
-    color: white;
-    padding-top: 20px;
-  }
-  
-  .sidebar ul {
-    list-style-type: none;
-    padding: 0;
-  }
-  
-  .sidebar ul li {
-    margin: 15px 0;
-  }
-  
-  .sidebar ul li a {
-    color: white;
-    text-decoration: none;
-    padding: 10px;
-    display: block;
-  }
-  
-  .sidebar ul li a:hover {
-    background-color: #575757;
-  }
-  
+  width: 220px;
+  height: 90vh;
+  background-color: #2BB3E0;
+  padding: 20px 10px;
+  font-family: Arial, sans-serif;
+  color: white;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  border-radius: 30px;
+}
+.sidebar ul {
+  list-style-type: none;
+  padding: 0;
+  flex-grow: 1;
+}
+.sidebar li {
+  margin-bottom: 20px;
+  display: flex;
+  align-items: center;
+}
+.sidebar a {
+  text-decoration: none;
+  color: white;
+  font-size: 20px;
+  padding: 10px;
+  display: flex;
+  align-items: center;
+  transition: background-color 0.3s, color 0.3s;
+  width: calc(100% + 40px); /* Prendre tout l'espace à droite et sortir de la barre latérale */
+  margin-right: -30px; /* Ajuster la marge pour sortir de la barre latérale */
+}
+.sidebar a:hover:not(.logout a),
+.sidebar a.active:not(.logout a) {
+  background-color: white;
+  color: black;
+  border-radius: 20px;
+}
+.icon {
+  font-size: 30px;
+  margin-right: 10px;
+  margin-top: 5px; /* Ajouter une marge supérieure pour descendre les icônes */
+}
+.logout .icon {
+  font-size: 40px; /* Augmenter la taille de l'icône du logout */
+}
+.smartfuel .icon {
+  font-size: 40px; /* Augmenter la taille de l'icône du smartfuel */
+}
+.logout {
+  margin-top: auto;
+  display: flex;
+  align-items: center;
+}
+.smartfuel-text {
+  font-weight: bold; /* Mettre le texte en gras */
+  font-size: 20px; /* Agrandir un peu le texte */
+  margin-top: -15px;
+}

@@ -1,9 +1,147 @@
+.dashboard-layout {
+  display: flex;
+}
+
 .dashboard-container {
-    padding: 20px;
-    background-color: #f4f4f4;
-  }
-  
-  .dashboard-container h2 {
-    color: #333;
-  }
-  
+  flex-grow: 1;
+  padding: 20px;
+  background-color: #ffffff; /* Couleur de fond pour le contenu principal */
+  margin-left: 20px; /* Ajouter une marge à gauche pour espacer du sidebar */
+}
+
+.layout {
+  display: flex;
+}
+
+.sidebar {
+  width: 220px;
+  height: 100vh;
+  background-color: #2BB3E0;
+  padding: 20px 10px;
+  color: white;
+}
+
+.content {
+  flex: 1;
+  padding: 20px;
+}
+
+.card {
+  background-color: white;
+  border-radius: 15px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  padding: 20px;
+  margin-bottom: 20px;
+}
+
+.flex-container {
+  display: flex;
+  justify-content: space-between;
+}
+
+.pump-card, .reservoir-card {
+  width: 48%;
+}
+
+.reservoir-card {
+  position: relative;
+  overflow: hidden; /* Assurez-vous que le contenu ne dépasse pas la carte */
+  margin-left: 20px; /* Déplacez la carte un peu à droite */
+}
+
+.reservoir-card::before {
+  content: "";
+  position: absolute;
+  top: 0; /* Ajustez la position selon vos besoins */
+  left: 15px; /* Ajustez la position selon vos besoins */
+  width: 50%; /* Ajustez la taille selon vos besoins */
+  height: 80%; /* Ajustez la taille selon vos besoins */
+  background-image: url('../../../assets/resbg.png'); /* Chemin vers votre image */
+  background-size: contain; /* Utilisez 'contain' pour afficher l'image dans son intégralité */
+  background-repeat: no-repeat; /* Empêche la répétition de l'image */
+  background-position: center;
+  z-index: 1; /* Placez l'image en arrière-plan */
+}
+
+.reservoir-card h3 {
+  position: relative;
+  z-index: 2; /* Placez le texte en avant-plan */
+  color: #2BB3E0; /* Assurez-vous que le texte est visible sur l'image */
+  text-align: center; /* Centrez le texte horizontalement */
+  margin-top: 30px; /* Ajustez la marge supérieure selon vos besoins */
+  margin-right: 400px; /* Ajustez la marge droite selon vos besoins */
+}
+
+.reservoir-card .card-content {
+  position: relative;
+  z-index: 2; /* Placez le texte en avant-plan */
+  color: #2BB3E0; /* Assurez-vous que le texte est visible sur l'image */
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start; /* Alignez le contenu à gauche */
+  margin-left: 500px; /* Ajustez la marge gauche pour espacer du bord */
+  margin-top: -120px; /* Ajustez la marge supérieure selon vos besoins */
+}
+
+.pump-card {
+  position: relative;
+  overflow: hidden; /* Assurez-vous que le contenu ne dépasse pas la carte */
+  margin-right: 20px; /* Déplacez la carte un peu à gauche */
+}
+
+.chart-card {
+  width: 95%; /* Ajustez ce pourcentage selon vos besoins */
+  margin: 0 auto; /* Centrer la carte horizontalement */
+  padding: 20px;
+  background-color: white;
+  border-radius: 15px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  margin-bottom: 10px;
+}
+
+.chart {
+  width: 100%; /* Ajustez ce pourcentage selon vos besoins */
+  height: 100px; /* Ajustez cette hauteur selon vos besoins */
+  margin: 0 auto; /* Centrer le graphique horizontalement */
+}
+
+.card-content {
+  display: flex;
+  justify-content: space-between;
+}
+
+.icon-large {
+  font-size: 3em; /* Ajustez cette taille selon vos besoins */
+}
+
+.text-large {
+  font-size: 1.5em; /* Ajustez cette taille selon vos besoins */
+}
+
+.fuel-info {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+}
+
+.pump-card, .reservoir-card {
+  width: 50%; /* Diminuer la largeur des cartes */
+  margin-right: 10px; /* Ajouter une petite distance entre les cartes */
+}
+
+.pump-card {
+  width: 35%; /* Diminuer la largeur des cartes */
+  margin-right: 10px; /* Ajouter une petite distance entre les cartes */
+}
+
+.profile-photo-container {
+  width: 50px; /* Ajustez la taille selon vos besoins */
+  height: 50px; /* Ajustez la taille selon vos besoins */
+  background-image: url('../../../assets/bgc.png'); /* Chemin vers votre image */
+  background-size: cover;
+  background-position: center;
+  border-radius: 50%; /* Pour rendre l'image circulaire */
+  margin-left: auto;
+  margin-right: 20px; /* Ajustez la marge selon vos besoins */
+  margin-bottom: 20px; /* Ajouter une marge en bas pour espacer des cartes */
+}

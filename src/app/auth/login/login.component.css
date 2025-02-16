@@ -5,12 +5,7 @@
   display: flex;
   justify-content: center;
   align-items: center;
-}
-
-.login-header {
-  text-align: center;
-  margin-bottom: 20px;
-}
+  }
 
 .login-content {
   background-image: url('../../../assets/bgc.png'); /* Chemin vers votre image */
@@ -44,9 +39,9 @@
   display: flex;
   justify-content: center;
   align-items: center;
-  margin-top: 40px; /* Ajustez la marge supérieure selon vos besoins */
-  width: 270px;
-  transform: translateX(-40px); /* Utilisez la propriété transform pour déplacer la carte vers la gauche */
+  margin-top: 10px; /* Ajustez la marge supérieure selon vos besoins */
+  width: 280px;
+  transform: translateX(-50px); /* Utilisez la propriété transform pour déplacer la carte vers la gauche */
 }
 .code-inputs {
   display: flex;
@@ -59,7 +54,62 @@
   text-align: center;
   padding: 10px;
   width: 50px;
-  border: 2px solid #ccc;
-  border-radius: 5px;
+  border: 1px solid #e9e7e7;
+  border-radius: 50px;
   box-sizing: border-box;
+}
+.error-message {
+  color: red;
+  font-weight: bold;
+  text-align: center;
+  margin-top: 10px;
+  margin-left: 300px;
+  font-size: 30px;
+
+}
+
+.locked-message {
+  text-align: center;
+  margin-top: 20px;
+}
+
+.progress-bar {
+  width: 100%;
+  background-color: #f3f3f3;
+  border-radius: 5px;
+  overflow: hidden;
+  margin-top: 10px;
+}
+
+.progress {
+  height: 10px;
+  background-color: #4caf50;
+  width: 100%;
+  transition: width 1s linear;
+}
+/* Ajoutez ces styles pour le titre "CODE" */
+.code-label {
+  font-weight: bold;
+  display: block;
+  margin-top: 5px; /* Ajustez la marge inférieure selon vos besoins */
+  font-size: 35px;
+}
+/* Media queries pour les petits écrans */
+@media (max-width: 600px) {
+  .login-content {
+    padding: 10px; /* Réduisez le padding pour les petits écrans */
+  }
+
+  .code-inputs-wrapper {
+    padding: 10px; /* Réduisez le padding pour les petits écrans */
+  }
+
+  .code-input {
+    font-size: 1.2em; /* Réduisez la taille de la police pour les petits écrans */
+    width: 40px; /* Réduisez la largeur pour les petits écrans */
+  }
+
+  .code-label {
+    font-size: 1.5em; /* Réduisez la taille de la police pour les petits écrans */
+  }
 }

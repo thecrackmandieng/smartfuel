@@ -1,8 +1,36 @@
-<app-sidebar></app-sidebar>
-
-<div class="dashboard-container">
-    <h2>Tableau de bord Administrateur</h2>
-    <p>Bienvenue sur votre tableau de bord, administrateur.</p>
-    <!-- Ajoutez ici les éléments spécifiques au dashboard admin -->
+<div class="dashboard-layout">
+  <app-sidebar></app-sidebar>
+  <div class="dashboard-container">
+    <div class="profile-photo-container"></div>
+    <div class="flex-container">
+      <div class="card reservoir-card">
+        <h3 class="text-large"><i class="fas fa-tint icon-large"></i> RÉSERVOIRE</h3>
+        <div class="card-content">
+          <div class="fuel-info">
+            <p class="text-large" style="color: green;"><i class="fas fa-gas-pump icon-large"></i> DIESEL: 75%</p>
+          </div>
+          <div class="fuel-info">
+            <p class="text-large" style="color: brown;"><i class="fas fa-gas-pump icon-large"></i> GAZOIL: 85%</p>
+          </div>
+        </div>
+      </div>
+      <div class="card pump-card">
+        <h3 class="text-large"><i class="fas fa-pump icon-large"></i> POMPE</h3>
+        <div class="card-content">
+          <div class="fuel-info">
+            <p class="text-large" style="color: green;"><i class="fas fa-gas-pump icon-large"></i> DIESEL: 10L</p>
+            <p class="text-large" style="color: green;">Prix: 10000F</p>
+          </div>
+          <div class="fuel-info">
+            <p class="text-large" style="color: brown;"><i class="fas fa-gas-pump icon-large"></i> GAZOIL: 20L</p>
+            <p class="text-large" style="color: brown;">Prix: 18000F</p>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="card chart-card">
+      <h3 class="text-large"><i class="fas fa-chart-bar icon-large"></i> Volume vendu (%)</h3>
+      <canvas class="chart" #salesChart></canvas>
+    </div>
   </div>
-  
+</div>

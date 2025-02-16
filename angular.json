@@ -21,15 +21,21 @@
             ],
             "tsConfig": "tsconfig.app.json",
             "assets": [
-              {
-                "glob": "**/*",
-                "input": "public"
-              }
+            "src/favicon.ico",
+            "src/assets",
+            {
+              "glob": "**/*",
+              "input": "src/assets/media",
+              "output": "/media"
+            }
+          ],
+          "styles": [
+            "src/styles.css"
+          ],
+                    
+            "scripts": [
+              "node_modules/chart.js/dist/chart.js"
             ],
-            "styles": [
-              "src/styles.css"
-            ],
-            "scripts": [],
             "server": "src/main.server.ts",
             "outputMode": "server",
             "ssr": {
@@ -41,16 +47,19 @@
               "budgets": [
                 {
                   "type": "initial",
-                  "maximumWarning": "500kB",
-                  "maximumError": "1MB"
+                  "maximumWarning": "3mb",
+                  "maximumError": "4mb"
                 },
                 {
                   "type": "anyComponentStyle",
-                  "maximumWarning": "4kB",
-                  "maximumError": "8kB"
+                  "maximumWarning": "700kb",
+                  "maximumError": "1.2mb"
                 }
               ],
-              "outputHashing": "all"
+              "optimization": true,
+              "outputHashing": "all",
+              "sourceMap": false,
+              "namedChunks": false
             },
             "development": {
               "optimization": false,
