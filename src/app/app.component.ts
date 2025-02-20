@@ -5,9 +5,7 @@ import { routes } from './app.routes';
 @Component({
   selector: 'app-root',
   standalone: true,
-  template: `
-    <router-outlet></router-outlet>
-  `,
+  templateUrl: './app.component.html',
   styleUrls: ['./app.component.css'],
   imports: [RouterOutlet, ] // Importer RouterOutlet et SidebarComponent
 })
