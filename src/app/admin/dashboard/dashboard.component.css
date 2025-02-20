@@ -29,9 +29,12 @@
 .card {
   background-color: white;
   border-radius: 15px;
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.5);
   padding: 20px;
   margin-bottom: 20px;
+  border-right: 2px solid #2BB3E0; /* Ajoutez une bordure sur le côté droit */
+  border-bottom: 2px solid #2BB3E0; /* Ajoutez une bordure sur le côté droit */
+
 }
 
 .flex-container {
@@ -95,7 +98,7 @@
   padding: 20px;
   background-color: white;
   border-radius: 15px;
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.5);
   margin-bottom: 10px;
 }
 
@@ -144,4 +147,31 @@
   margin-left: auto;
   margin-right: 20px; /* Ajustez la marge selon vos besoins */
   margin-bottom: 20px; /* Ajouter une marge en bas pour espacer des cartes */
+}
+/* Media queries pour les petits écrans */
+@media (max-width: 768px) {
+  .pump-card, .reservoir-card {
+    width: 100%; /* Prenez toute la largeur sur les petits écrans */
+    margin-left: 0; /* Réinitialisez la marge gauche */
+    margin-right: 0; /* Réinitialisez la marge droite */
+  }
+
+  .reservoir-card::before {
+    top: 5px; /* Ajustez la position selon vos besoins */
+    left: 5px; /* Ajustez la position selon vos besoins */
+    width: 80px; /* Ajustez la taille selon vos besoins */
+    height: 80px; /* Ajustez la taille selon vos besoins */
+  }
+
+  .reservoir-card h3 {
+    margin-left: 100px; /* Ajustez la marge gauche pour espacer du bord */
+  }
+
+  .reservoir-card .card-content {
+    margin-left: 100px; /* Ajustez la marge gauche pour espacer du bord */
+  }
+
+  .fuel-info {
+    margin-left: 100px; /* Ajustez la marge gauche pour espacer du bord */
+  }
 }

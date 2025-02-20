@@ -1,8 +1,26 @@
-<app-sidebar></app-sidebar>
-
-<div class="dashboard-container">
-    <h2>Tableau de bord Pompiste</h2>
-    <p>Bienvenue sur votre tableau de bord, pompiste.</p>
-    <!-- Ajoutez ici les éléments spécifiques au dashboard pompiste -->
+<div class="dashboard-layout">
+  <div class="dashboard-container">
+    <div class="profile-photo-container"></div>
+    <div class="overlay-card">
+      <div class="overlay">
+        <div class="header">
+          <button class="power-btn"><i class="fas fa-power-off"></i></button>
+        </div>
+        <div class="fuel-options">
+          <div class="fuel-card diesel">
+            <button class="icon-btn red-icon">
+              <i class="fas fa-gas-pump"></i>
+            </button>
+            <h2>DIESEL</h2>
+          </div>
+          <div class="fuel-card gazoil">
+            <button class="icon-btn green-icon">
+              <i class="fas fa-gas-pump"></i>
+            </button>
+            <h2>GAZOIL</h2>
+          </div>
+        </div>
+      </div>
+    </div>
   </div>
-  
+</div>
