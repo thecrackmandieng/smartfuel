@@ -90,8 +90,10 @@ export class LoginComponent implements AfterViewInit {
             // Vérifiez le rôle dans la réponse
             const role = response.role; // Assurez-vous que la réponse inclut le rôle
             if (role === "admin") {
+              setTimeout(() => {
               this.router.navigate(['/admin/dashboard']); // Redirection vers la page admin/dashboard
-            } else {
+            }, 100)} 
+            else {
               // Gérer d'autres rôles si nécessaire
               this.errorMessage = 'Accès non autorisé pour ce rôle';
             }
