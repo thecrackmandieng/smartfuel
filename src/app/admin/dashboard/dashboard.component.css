@@ -95,19 +95,21 @@
 .chart-card {
   width: 95%; /* Ajustez ce pourcentage selon vos besoins */
   margin: 0 auto; /* Centrer la carte horizontalement */
-  padding: 20px;
+  padding: 5px; /* Ajustez le padding selon vos besoins */
   background-color: white;
   border-radius: 15px;
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.5);
   margin-bottom: 10px;
+  height: 470px; /* Augmenter la hauteur de la carte */
+  overflow: hidden; /* Assurez-vous que le contenu ne dépasse pas la carte */
 }
 
 .chart {
-  width: 100%; /* Ajustez ce pourcentage selon vos besoins */
-  height: 100px; /* Ajustez cette hauteur selon vos besoins */
+  width: 90%; /* Ajustez la largeur du graphique selon vos besoins */
+  height: 50px; /* Diminuer la hauteur du graphique */
   margin: 0 auto; /* Centrer le graphique horizontalement */
+  margin-bottom: 0; /* Ajustez la marge inférieure pour espacer du texte */
 }
-
 .card-content {
   display: flex;
   justify-content: space-between;
