@@ -1,101 +1,185 @@
 <div class="container">
-    <aside class="sidebar">
-      <!-- Votre sidebar ici -->
-      <app-sidebar></app-sidebar>
-    </aside>
-    
-    <main class="main-content">
-      <div class="card">
-        <!-- Header -->
-        <div class="header">
-          <h1>Gestion des Utilisateurs</h1>
-          <div class="header-buttons">
-            <button class="btn-delete" [disabled]="!hasSelection" (click)="deleteSelected()">
-              <i class="fas fa-trash-alt"></i>Supprimer
-            </button>
-            <button class="btn-add" (click)="addUser()">
-              <i class="fas fa-plus"></i>Ajouter
-            </button>
-          </div>
-        </div>
+  <aside class="sidebar">
+    <app-sidebar></app-sidebar>
+  </aside>
   
-        <!-- Search Bar -->
-        <div class="search-section">
-          <div class="search-container">
-            <i class="fas fa-search search-icon"></i>
-            <input 
-              type="text" 
-              [(ngModel)]="searchTerm"
-              (input)="onSearch()"
-              placeholder="Rechercher par Prenom, Email, Matricule..." 
-              class="search-input"
-            />
-          </div>
-          <button class="btn-filter">
-            <i class="fas fa-filter"></i>Filtre
+  <main class="main-content">
+    <div class="card">
+      <!-- Header -->
+      <div class="header">
+        <h1>Gestion des Utilisateurs</h1>
+        <div class="header-buttons">
+          <button class="btn-delete" [disabled]="!hasSelection" (click)="deleteSelected()">
+            <i class="fas fa-trash-alt"></i>Supprimer
+          </button>
+          <button class="btn-add" (click)="openModal('addModal')">
+            <i class="fas fa-plus"></i>Ajouter
           </button>
         </div>
-  
-        <!-- Table -->
-        <div class="table-container">
-          <table>
-            <thead>
-              <tr>
-                <th>
-                  <input type="checkbox" 
-                         [checked]="allSelected"
-                         (change)="toggleAllSelection()"/>
-                </th>
-                <th>Matricule</th>
-                <th>Prenom et Nom</th>
-                <th>Email</th>
-                <th>Telephone</th>
-                <th>Role</th>
-                <th>Status</th>
-                <th>Actions</th>
-                <th>Assignation</th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr *ngFor="let user of filteredUtilisateurs">
-                <td>
-                  <input type="checkbox" [(ngModel)]="user.selected"/>
-                </td>
-                <td>{{user.matricule}}</td>
-                <td>{{user.prenom}} {{user.nom}}</td>
-                <td>{{user.email}}</td>
-                <td>{{user.telephone}}</td>
-                <td>{{user.role}}</td>
-                <td>
-                  <span [class]="'status ' + (user.status === 'Actif' ? 'status-active' : 'status-inactive')">
-                    {{user.status}}
-                  </span>
-                </td>
-                <td>
-                  <div class="actions">
-                    <button class="btn-action edit" (click)="editUser(user)">
-                      <i class="fas fa-edit"></i>
-                    </button>
-                    <button class="btn-action view" (click)="viewUser(user)">
-                      <i class="fas fa-eye"></i>
-                    </button>
-                    <button class="btn-action delete" (click)="deleteUser(user)">
-                      <i class="fas fa-trash"></i>
-                    </button>
-                    <button class="btn-action settings">
-                      <i class="fas fa-cog"></i>
-                    </button>
-                  </div>
-                </td>
-                <td>
-                  <button class="btn-assign" (click)="assignUser(user)">
-                    <i class="fas fa-user-plus"></i>Assigner
-                  </button>
-                </td>
-              </tr>
-            </tbody>
-          </table>
-        </div>
       </div>
-    </main>
+
+      <!-- Search Bar -->
+      <div class="search-section">
+        <div class="search-container">
+          <i class="fas fa-search search-icon"></i>
+          <input 
+            type="text" 
+            [(ngModel)]="searchTerm"
+            (input)="onSearch()"
+            placeholder="Rechercher par Prenom, Email, Matricule..." 
+            class="search-input"
+          />
+        </div>
+  
+      </div>
+
+      <!-- Table -->
+      <div class="table-container">
+        <table>
+          <thead>
+            <tr>
+              <th>
+                <input type="checkbox" 
+                       [checked]="allSelected"
+                       (change)="toggleAllSelection()"/>
+              </th>
+              <th>Matricule</th>
+              <th>Prenom et Nom</th>
+              <th>Email</th>
+              <th>Telephone</th>
+              <th>Role</th>
+              <th>Status</th>
+              <th>Actions</th>
+              <th>Assignation</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let user of filteredUtilisateurs">
+              <td>
+                <input type="checkbox" [(ngModel)]="user.selected"/>
+              </td>
+              <td>{{user.matricule}}</td>
+              <td>{{user.prenom}} {{user.nom}}</td>
+              <td>{{user.email}}</td>
+              <td>{{user.telephone}}</td>
+              <td>{{user.role}}</td>
+              <td>
+                <span [class]="'status ' + (user.status === 'Actif' ? 'status-active' : 'status-inactive')">
+                  {{user.status}}
+                </span>
+              </td>
+              <td>
+                <div class="actions">
+                  <button class="btn-action edit" [disabled]="user.status !== 'Actif'" (click)="openModal('editModal', user)">
+                    <i class="fas fa-edit"></i>
+                  </button>
+                  <button class="btn-action view" [disabled]="user.status !== 'Actif'" (click)="openModal('viewModal', user)">
+                    <i class="fas fa-eye"></i>
+                  </button>
+                  <button class="btn-action delete" [disabled]="user.status !== 'Actif'" (click)="openModal('deleteModal', user)">
+                    <i class="fas fa-trash"></i>
+                  </button>
+                  <button class="btn-action block" (click)="toggleBlockUser(user)">
+                    <i class="fas" [ngClass]="user.status === 'Actif' ? 'fa-unlock' : 'fa-lock'"></i>
+                  </button>
+                </div>
+              </td>
+              <td>
+                <button class="btn-assign" [disabled]="user.status !== 'Actif'" (click)="openModal('assignModal', user)">
+                  <i class="fas fa-user-plus"></i>Assigner
+                </button>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </main>
+</div>
+
+<!-- Modals -->
+<div id="addModal" class="modal">
+  <div class="modal-content">
+      <span class="close" (click)="closeModal('addModal')">&times;</span>
+      <h2><i class="fas fa-user-plus"></i> Ajouter un Utilisateur</h2>
+      <label>Matricule :</label>
+      <input type="text" [(ngModel)]="newUser.matricule">
+      <label>Prenom :</label>
+      <input type="text" [(ngModel)]="newUser.prenom">
+      <label>Nom :</label>
+      <input type="text" [(ngModel)]="newUser.nom">
+      <label>Email :</label>
+      <input type="email" [(ngModel)]="newUser.email">
+      <label>Telephone :</label>
+      <input type="text" [(ngModel)]="newUser.telephone">
+      <label>Role :</label>
+      <select [(ngModel)]="newUser.role">
+          <option value="" disabled selected>Sélectionnez un rôle</option>
+          <option value="Admin">Admin</option>
+          <option value="Utilisateur">Utilisateur</option>
+          <option value="Pompiste">Pompiste</option>
+          <!-- Ajoutez d'autres options selon vos besoins -->
+      </select>
+      <button (click)="addUser()">Ajouter</button>
   </div>
+</div>
+
+<div id="editModal" class="modal">
+  <div class="modal-content">
+      <span class="close" (click)="closeModal('editModal')">&times;</span>
+      <h2><i class="fas fa-user-edit"></i> Modifier l'Utilisateur</h2>
+      <label>Matricule :</label>
+      <input *ngIf="selectedUser" type="text" [(ngModel)]="selectedUser.matricule">
+      <label>Prenom :</label>
+      <input *ngIf="selectedUser" type="text" [(ngModel)]="selectedUser.prenom">
+      <label>Nom :</label>
+      <input *ngIf="selectedUser" type="text" [(ngModel)]="selectedUser.nom">
+      <label>Email :</label>
+      <input *ngIf="selectedUser" type="email" [(ngModel)]="selectedUser.email">
+      <label>Telephone :</label>
+      <input *ngIf="selectedUser" type="text" [(ngModel)]="selectedUser.telephone">
+      <label>Role :</label>
+      <select *ngIf="selectedUser" [(ngModel)]="selectedUser.role">
+          <option value="Admin">Admin</option>
+          <option value="User">Utilisateur</option>
+          <option value="Pompiste">Pompiste</option>
+          <!-- Ajoutez d'autres options selon vos besoins -->
+      </select>
+      <button *ngIf="selectedUser" (click)="editUser(selectedUser)">Modifier</button>
+  </div>
+</div>
+
+<div id="viewModal" class="modal">
+  <div class="modal-content">
+      <span class="close" (click)="closeModal('viewModal')">&times;</span>
+      <h2><i class="fas fa-user"></i> Détails de l'Utilisateur</h2>
+      <p><strong>Matricule :</strong> {{ selectedUser?.matricule }}</p>
+      <p><strong>Prenom :</strong> {{ selectedUser?.prenom }}</p>
+      <p><strong>Nom :</strong> {{ selectedUser?.nom }}</p>
+      <p><strong>Email :</strong> {{ selectedUser?.email }}</p>
+      <p><strong>Telephone :</strong> {{ selectedUser?.telephone }}</p>
+      <p><strong>Role :</strong> {{ selectedUser?.role }}</p>
+      <p><strong>Status :</strong> {{ selectedUser?.status }}</p>
+  </div>
+</div>
+
+<div id="deleteModal" class="modal">
+  <div class="modal-content">
+      <span class="close" (click)="closeModal('deleteModal')">&times;</span>
+      <h2><i class="fas fa-user-times"></i> Confirmer la Suppression</h2>
+      <p>Êtes-vous sûr de vouloir supprimer cet utilisateur ?</p>
+      <button (click)="confirmDeleteUser()">Oui</button>
+      <button (click)="closeModal('deleteModal')">Non</button>
+  </div>
+</div>
+
+<div id="assignModal" class="modal">
+  <div class="modal-content">
+      <span class="close" (click)="closeModal('assignModal')">&times;</span>
+      <h2><i class="fas fa-user-plus"></i> Assigner une Carte</h2>
+      <label>Code Carte :</label>
+      <input type="text" [(ngModel)]="assignCardCode">
+      <button (click)="selectedUser && assignCard(selectedUser)">Assigner</button>
+      <button (click)="closeModal('assignModal')">Annuler</button>
+  </div>
+</div>

@@ -4,126 +4,145 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 
 interface Utilisateur {
-status: any;
-role: any;
   matricule: string;
-  nom: string;
   prenom: string;
-  telephone: string;
+  nom: string;
   email: string;
+  telephone: string;
+  role: string;
+  status: string;
   selected?: boolean;
 }
 
 @Component({
   selector: 'app-gestion-utilisateurs',
   standalone: true,
-  imports: [CommonModule, FormsModule, SidebarComponent],
+  imports: [SidebarComponent, CommonModule, FormsModule],
   templateUrl: './gestion-utilisateurs.component.html',
   styleUrls: ['./gestion-utilisateurs.component.css']
 })
 export class GestionUtilisateursComponent {
-  utilisateurs: Utilisateur[] = [
-    {
-      matricule: '001', nom: 'Dieng', prenom: 'Moustapha', telephone: '771234567', role: 'utilisateur', status: 'Actif', email: 'moustapha@example.com', selected: false
-    },
-    {
-      matricule: '001', nom: 'Dieng', prenom: 'Moustapha', telephone: '771234567', role: 'utilisateur', status: 'Inactif', email: 'moustapha@example.com', selected: false
-    },
-    {
-      matricule: '001', nom: 'Dieng', prenom: 'Moustapha', telephone: '771234567', role: 'utilisateur', status: 'Actif', email: 'moustapha@example.com', selected: false
-    },
-    {
-      matricule: '001', nom: 'Dieng', prenom: 'Moustapha', telephone: '771234567', role: 'utilisateur', status: 'Inactif', email: 'moustapha@example.com', selected: false
-    },
-    {
-      matricule: '001', nom: 'Dieng', prenom: 'Moustapha', telephone: '771234567', role: 'utilisateur', status: 'Inactif', email: 'moustapha@example.com', selected: false
-    },
-    {
-      matricule: '001', nom: 'Dieng', prenom: 'Moustapha', telephone: '771234567', role: 'utilisateur', status: 'Actif', email: 'moustapha@example.com', selected: false
-    },
-    {
-      matricule: '001', nom: 'Dieng', prenom: 'Moustapha', telephone: '771234567', role: 'utilisateur', status: 'Inactif', email: 'moustapha@example.com', selected: false
-    },
-    {
-      matricule: '001', nom: 'Dieng', prenom: 'Moustapha', telephone: '771234567', role: 'utilisateur', status: 'Actif', email: 'moustapha@example.com', selected: false
-    }
-    
-  ];
-
-  filteredUtilisateurs: Utilisateur[] = [...this.utilisateurs];
+confirmDeleteUser() {
+throw new Error('Method not implemented.');
+}
   searchTerm: string = '';
   allSelected: boolean = false;
+  hasSelection: boolean = false;
+  filteredUtilisateurs: Utilisateur[] = [
+    { matricule: '123456', prenom: 'Ali', nom: 'Diop', email: 'ali.diop@example.com', telephone: '123456789', role: 'Utilisateur', status: 'Actif', selected: false },
+    { matricule: '654321', prenom: 'Awa', nom: 'Ba', email: 'awa.ba@example.com', telephone: '987654321', role: 'Pompiste', status: 'Inactif', selected: false },
+    { matricule: '654321', prenom: 'Awa', nom: 'Ba', email: 'awa.ba@example.com', telephone: '987654321', role: 'Pompiste', status: 'Inactif', selected: false },
+    { matricule: '654321', prenom: 'Awa', nom: 'Ba', email: 'awa.ba@example.com', telephone: '987654321', role: 'Pompiste', status: 'Inactif', selected: false },
+    { matricule: '654321', prenom: 'Awa', nom: 'Ba', email: 'awa.ba@example.com', telephone: '987654321', role: 'Pompiste', status: 'Inactif', selected: false },
+    { matricule: '654321', prenom: 'Awa', nom: 'Ba', email: 'awa.ba@example.com', telephone: '987654321', role: 'Pompiste', status: 'Inactif', selected: false }
 
-  get hasSelection(): boolean {
-    return this.utilisateurs.some(u => u.selected);
-  }
 
-  toggleAllSelection(): void {
-    this.allSelected = !this.allSelected;
-    this.filteredUtilisateurs.forEach(user => user.selected = this.allSelected);
-  }
 
-  onSearch(): void {
+
+  ];
+  utilisateurs: Utilisateur[] = [...this.filteredUtilisateurs];
+  newUser: Utilisateur = this.createEmptyUser();
+  selectedUser: Utilisateur | null = null;
+  assignCardCode: string = '';
+
+  onSearch() {
     if (!this.searchTerm.trim()) {
       this.filteredUtilisateurs = [...this.utilisateurs];
       return;
     }
     const searchLower = this.searchTerm.toLowerCase();
     this.filteredUtilisateurs = this.utilisateurs.filter(user => 
-      user.nom.toLowerCase().includes(searchLower) ||
-      user.prenom.toLowerCase().includes(searchLower) ||
-      user.email.toLowerCase().includes(searchLower) ||
       user.matricule.toLowerCase().includes(searchLower) ||
-      user.telephone.includes(searchLower)
+      user.prenom.toLowerCase().includes(searchLower) ||
+      user.nom.toLowerCase().includes(searchLower) ||
+      user.email.toLowerCase().includes(searchLower)
     );
   }
 
-  deleteSelected(): void {
-    this.utilisateurs = this.utilisateurs.filter(user => !user.selected);
+  toggleAllSelection() {
+    this.allSelected = !this.allSelected;
+    this.filteredUtilisateurs.forEach(user => user.selected = this.allSelected);
+    this.checkSelection();
+  }
+
+  checkSelection() {
+    this.hasSelection = this.filteredUtilisateurs.some(user => user.selected);
+  }
+
+  addUser() {
+    this.utilisateurs.unshift(this.newUser);
     this.filteredUtilisateurs = [...this.utilisateurs];
-    this.allSelected = false;
+    this.newUser = this.createEmptyUser();
+    this.closeModal('addModal');
   }
 
-  addUser(): void {
-    const newUser: Utilisateur = {
-      matricule: '00' + (this.utilisateurs.length + 1),
-      nom: '',
-      prenom: '',
-      telephone: '',
-      email: '',
-      selected: false,
-      status: undefined,
-      role: undefined
-    };
-    this.utilisateurs.unshift(newUser);
-    this.filteredUtilisateurs = [...this.utilisateurs];
+  editUser(user: Utilisateur) {
+    console.log('Modification de l\'utilisateur:', user);
+    this.closeModal('editModal');
   }
 
-  editUser(user: Utilisateur): void {
-    // Implémenter la logique d'édition
-    console.log('Édition de l\'utilisateur:', user);
+  viewUser(user: Utilisateur) {
+    console.log('Affichage des détails de l\'utilisateur:', user);
   }
 
-  viewUser(user: Utilisateur): void {
-    // Implémenter la logique de visualisation
-    console.log('Visualisation de l\'utilisateur:', user);
-  }
-
-  deleteUser(user: Utilisateur): void {
+  deleteUser(user: Utilisateur) {
     const index = this.utilisateurs.indexOf(user);
     if (index > -1) {
       this.utilisateurs.splice(index, 1);
       this.filteredUtilisateurs = [...this.utilisateurs];
     }
+    this.closeModal('deleteModal');
   }
 
-  assignUser(user: Utilisateur): void {
-    // Implémenter la logique d'assignation
-    console.log('Assignation de l\'utilisateur:', user);
+  deleteSelected() {
+    this.utilisateurs = this.utilisateurs.filter(user => !user.selected);
+    this.filteredUtilisateurs = [...this.utilisateurs];
+    this.checkSelection();
   }
 
-  resetSearch(): void {
+  toggleBlockUser(user: Utilisateur) {
+    user.status = user.status === 'Actif' ? 'Inactif' : 'Actif';
+    console.log('Changement de statut de l\'utilisateur:', user);
+  }
+
+  assignCard(user: Utilisateur) {
+    console.log('Assignation de la carte:', this.assignCardCode, 'à l\'utilisateur:', user);
+    this.closeModal('assignModal');
+  }
+
+  resetSearch() {
     this.searchTerm = '';
     this.filteredUtilisateurs = [...this.utilisateurs];
+  }
+
+  openModal(modalId: string, user?: Utilisateur) {
+    const modal = document.getElementById(modalId);
+    if (modal) {
+      modal.style.display = 'block';
+    }
+    if (user) {
+      this.selectedUser = { ...user };
+    }
+  }
+
+  closeModal(modalId: string) {
+    const modal = document.getElementById(modalId);
+    if (modal) {
+      modal.style.display = 'none';
+    }
+    this.selectedUser = null;
+  }
+
+  private createEmptyUser(): Utilisateur {
+    return {
+      matricule: '',
+      prenom: '',
+      nom: '',
+      email: '',
+      telephone: '',
+      role: '',
+      status: 'Inactif',
+      selected: false
+    };
   }
 }

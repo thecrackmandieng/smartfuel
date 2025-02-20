@@ -50,6 +50,9 @@
 
 .fuel-options {
   display: flex;
+  flex-direction: row;
+  justify-content: center;
+  align-items: center;
   gap: 50px;
   background-color: rgba(45, 134, 185, 0.3);
   padding: 100px;
@@ -62,6 +65,10 @@
 .fuel-card {
   text-align: center;
   cursor: pointer;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
 }
 
 .icon-btn {
@@ -91,4 +98,18 @@
 
 .gazoil h2 {
   color: brown;
+}
+
+.input-fields {
+  display: none; /* Caché par défaut */
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  margin-top: 15px;
+}
+
+.input-fields label,
+.input-fields input {
+  width: 100%;
+  text-align: center;
 }

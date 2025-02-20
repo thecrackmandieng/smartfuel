@@ -1,130 +1,139 @@
 <div class="container">
-    <aside class="sidebar">
-      <app-sidebar></app-sidebar>
-    </aside>
+  <aside class="sidebar">
+    <app-sidebar></app-sidebar>
+  </aside>
   
-    <main class="main-content">
-      <div class="card">
-        <!-- Header -->
-        <div class="header">
-          <h1>Gestion des Pompes</h1>
-          <div class="header-buttons">
-            <button class="btn-delete" [disabled]="!hasSelection" (click)="deleteSelected()">
-              <i class="fas fa-trash-alt"></i> Supprimer
-            </button>
-            <button class="btn-add" (click)="openModal('addModal')">
-              <i class="fas fa-plus"></i> Ajouter
-            </button>
-          </div>
-        </div>
-  
-        <!-- Search Bar -->
-        <div class="search-section">
-          <div class="search-container">
-            <i class="fas fa-search search-icon"></i>
-            <input 
-              type="text" 
-              [(ngModel)]="searchTerm"
-              (input)="onSearch()"
-              placeholder="Rechercher par Type de Pompe..." 
-              class="search-input"
-            />
-          </div>
-          <button class="btn-filter">
-            <i class="fas fa-filter"></i> Filtre
+  <main class="main-content">
+    <div class="card">
+      <!-- Header -->
+      <div class="header">
+        <h1>Gestion des Pompes</h1>
+        <div class="header-buttons">
+          <button class="btn-delete" [disabled]="!hasSelection" (click)="deleteSelected()">
+            <i class="fas fa-trash-alt"></i> Supprimer
+          </button>
+          <button class="btn-add" (click)="openModal('addModal')">
+            <i class="fas fa-plus"></i> Ajouter
           </button>
         </div>
-  
-        <!-- Table -->
-        <div class="table-container">
-          <table>
-            <thead>
-              <tr>
-                <th>
-                  <input type="checkbox" 
-                         [checked]="allSelected"
-                         (change)="toggleAllSelection()"/>
-                </th>
-                <th>Type de Pompe</th>
-                <th>Prix Unitaire (L)</th>
-                <th>Status</th>
-                <th>Actions</th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr *ngFor="let pompe of filteredPompes">
-                <td>
-                  <input type="checkbox" [(ngModel)]="pompe.selected" (change)="checkSelection()"/>
-                </td>
-                <td>{{ pompe.type }}</td>
-                <td>{{ pompe.prix }} FCFA</td>
-                <td>
-                  <span [class]="'status ' + (pompe.status === 'Active' ? 'status-active' : 'status-inactive')">
-                    {{ pompe.status }}
-                  </span>
-                </td>
-                <td>
-                  <div class="actions">
-                    <button class="btn-action edit" (click)="openModal('editModal', pompe)">
-                      <i class="fas fa-edit"></i>
-                    </button>
-                    <button class="btn-action view" (click)="openModal('viewModal', pompe)">
-                      <i class="fas fa-eye"></i>
-                    </button>
-                    <button class="btn-action delete" (click)="deletePump(pompe)">
-                      <i class="fas fa-trash"></i>
-                    </button>
-                  </div>
-                </td>
-              </tr>
-            </tbody>
-          </table>
-        </div>
       </div>
-    </main>
-  </div>
-  
-  <!-- Modals -->
-  <div id="addModal" class="modal">
-    <div class="modal-content">
+
+      <!-- Search Bar -->
+      <div class="search-section">
+        <div class="search-container">
+          <i class="fas fa-search search-icon"></i>
+          <input 
+            type="text" 
+            [(ngModel)]="searchTerm"
+            (input)="onSearch()"
+            placeholder="Rechercher par Type de Pompe..." 
+            class="search-input"
+          />
+        </div>
+        <button class="btn-filter">
+          <i class="fas fa-filter"></i> Filtre
+        </button>
+      </div>
+
+      <!-- Table -->
+      <div class="table-container">
+        <table>
+          <thead>
+            <tr>
+              <th>
+                <input type="checkbox" 
+                       [checked]="allSelected"
+                       (change)="toggleAllSelection()"/>
+              </th>
+              <th>Type de Pompe</th>
+              <th>Prix Unitaire (L)</th>
+              <th>Status</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let pompe of filteredPompes">
+              <td>
+                <input type="checkbox" [(ngModel)]="pompe.selected" (change)="checkSelection()"/>
+              </td>
+              <td>{{ pompe.type }}</td>
+              <td>{{ pompe.prix }} FCFA</td>
+              <td>
+                <span [class]="'status ' + (pompe.status === 'Active' ? 'status-active' : 'status-inactive')">
+                  {{ pompe.status }}
+                </span>
+              </td>
+              <td>
+                <div class="actions">
+                  <button class="btn-action edit" [disabled]="pompe.status !== 'Active'" (click)="openModal('editModal', pompe)">
+                    <i class="fas fa-edit"></i>
+                  </button>
+                  <button class="btn-action view" [disabled]="pompe.status !== 'Active'" (click)="openModal('viewModal', pompe)">
+                    <i class="fas fa-eye"></i>
+                  </button>
+                  <button class="btn-action delete" [disabled]="pompe.status !== 'Active'" (click)="deletePump(pompe)">
+                    <i class="fas fa-trash"></i>
+                  </button>
+                  <button class="btn-action block" (click)="toggleBlockPump(pompe)">
+                    <i class="fas" [ngClass]="pompe.status === 'Active' ? 'fa-unlock' : 'fa-lock'"></i>
+                  </button>
+                </div>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </main>
+</div>
+
+<!-- Modals -->
+<div id="addModal" class="modal">
+  <div class="modal-content">
       <span class="close" (click)="closeModal('addModal')">&times;</span>
-      <h2>Ajouter une Pompe</h2>
+      <h2><i class="fas fa-gas-pump"></i> Ajouter une Pompe</h2>
       <label>Type de Pompe :</label>
-      <input type="text" [(ngModel)]="newPump.type">
+      <select [(ngModel)]="newPump.type">
+          <option value="" disabled selected>Sélectionnez un type</option>
+          <option value="Type1">Diesel</option>
+          <option value="Type2">Gazol</option>
+          <option value="Type3">GPL</option>
+          <!-- Ajoutez d'autres options selon vos besoins -->
+      </select>
       <label>Prix Unitaire (L) :</label>
       <input type="number" [(ngModel)]="newPump.prix">
       <button (click)="addPump()">Ajouter</button>
-    </div>
   </div>
-  
-  <div id="editModal" class="modal">
-    <div class="modal-content">
+</div>
+
+<div id="editModal" class="modal">
+  <div class="modal-content">
       <span class="close" (click)="closeModal('editModal')">&times;</span>
-      <h2>Modifier la Pompe</h2>
+      <h2><i class="fas fa-gas-pump"></i> Modifier la Pompe</h2>
       <label>Type de Pompe :</label>
       <input *ngIf="selectedPump" type="text" [(ngModel)]="selectedPump.type">
       <label>Prix Unitaire (L) :</label>
       <input *ngIf="selectedPump" type="number" [(ngModel)]="selectedPump.prix">
       <button *ngIf="selectedPump" (click)="editPump(selectedPump)">Modifier</button>
-    </div>
   </div>
-  
-  <div id="viewModal" class="modal">
-    <div class="modal-content">
+</div>
+
+<div id="viewModal" class="modal">
+  <div class="modal-content">
       <span class="close" (click)="closeModal('viewModal')">&times;</span>
-      <h2>Détails de la Pompe</h2>
+      <h2><i class="fas fa-gas-pump"></i> Détails de la Pompe</h2>
       <p><strong>Type :</strong> {{ selectedPump?.type }}</p>
       <p><strong>Prix :</strong> {{ selectedPump?.prix }} FCFA</p>
       <p><strong>Status :</strong> {{ selectedPump?.status }}</p>
-    </div>
   </div>
-  
-  <div id="deleteModal" class="modal">
-    <div class="modal-content">
+</div>
+
+<div id="deleteModal" class="modal">
+  <div class="modal-content">
       <span class="close" (click)="closeModal('deleteModal')">&times;</span>
-      <h2>Confirmer la Suppression</h2>
+      <h2><i class="fas fa-gas-pump"></i> Confirmer la Suppression</h2>
       <p>Êtes-vous sûr de vouloir supprimer cette pompe ?</p>
       <button (click)="confirmDeletePump()">Oui</button>
       <button (click)="closeModal('deleteModal')">Non</button>
-    </div>
   </div>
+</div>

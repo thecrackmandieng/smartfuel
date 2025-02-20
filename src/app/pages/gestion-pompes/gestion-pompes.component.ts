@@ -13,95 +13,111 @@ interface Pompe {
 @Component({
   selector: 'app-gestion-pompes',
   standalone: true,
-  imports: [CommonModule, FormsModule, SidebarComponent],
+  imports: [SidebarComponent, CommonModule, FormsModule],
   templateUrl: './gestion-pompes.component.html',
   styleUrls: ['./gestion-pompes.component.css']
 })
 export class GestionPompesComponent {
-  pompes: Pompe[] = [
-    { type: 'Diesel', prix: 1000, status: 'Active', selected: false },
-    { type: 'Essence', prix: 1200, status: 'Inactive', selected: false },
-    { type: 'GPL', prix: 800, status: 'Active', selected: false }
-  ];
-
-  filteredPompes: Pompe[] = [...this.pompes];
+confirmDeletePump() {
+throw new Error('Method not implemented.');
+}
   searchTerm: string = '';
   allSelected: boolean = false;
-  newPump: Pompe = { type: '', prix: 0, status: 'Active' };
+  hasSelection: boolean = false;
+  filteredPompes: Pompe[] = [
+    { type: 'Diesel', prix: 1000, status: 'Active', selected: false },
+    { type: 'Gazol', prix: 900, status: 'Inactive', selected: false }
+  ];
+  pompes: Pompe[] = [...this.filteredPompes];
+  newPump: Pompe = this.createEmptyPump();
   selectedPump: Pompe | null = null;
-  pumpToDelete: Pompe | null = null;
 
-  get hasSelection(): boolean {
-    return this.pompes.some(p => p.selected);
-  }
-
-  toggleAllSelection(): void {
-    this.allSelected = !this.allSelected;
-    this.filteredPompes.forEach(pump => pump.selected = this.allSelected);
-  }
-
-  onSearch(): void {
+  onSearch() {
     if (!this.searchTerm.trim()) {
       this.filteredPompes = [...this.pompes];
       return;
     }
     const searchLower = this.searchTerm.toLowerCase();
-    this.filteredPompes = this.pompes.filter(pump => 
-      pump.type.toLowerCase().includes(searchLower)
+    this.filteredPompes = this.pompes.filter(pompe => 
+      pompe.type.toLowerCase().includes(searchLower)
     );
   }
 
-  deleteSelected(): void {
-    this.pompes = this.pompes.filter(pump => !pump.selected);
-    this.filteredPompes = [...this.pompes];
-    this.allSelected = false;
+  toggleAllSelection() {
+    this.allSelected = !this.allSelected;
+    this.filteredPompes.forEach(pompe => pompe.selected = this.allSelected);
+    this.checkSelection();
   }
 
-  addPump(): void {
-    this.pompes.push({ ...this.newPump });
+  checkSelection() {
+    this.hasSelection = this.filteredPompes.some(pompe => pompe.selected);
+  }
+
+  addPump() {
+    this.pompes.unshift(this.newPump);
     this.filteredPompes = [...this.pompes];
-    this.newPump = { type: '', prix: 0, status: 'Active' };
+    this.newPump = this.createEmptyPump();
     this.closeModal('addModal');
   }
 
-  editPump(pump: Pompe | null): void {
-    if (pump) {
-      const index = this.pompes.findIndex(p => p.type === pump.type);
-      if (index > -1) {
-        this.pompes[index] = { ...pump };
-        this.filteredPompes = [...this.pompes];
-      }
-      this.closeModal('editModal');
-    }
+  editPump(pompe: Pompe) {
+    console.log('Modification de la pompe:', pompe);
+    this.closeModal('editModal');
   }
 
-  deletePump(pump: Pompe): void {
-    this.pumpToDelete = pump;
-    this.openModal('deleteModal');
+  viewPump(pompe: Pompe) {
+    console.log('Affichage des détails de la pompe:', pompe);
   }
 
-  confirmDeletePump(): void {
-    if (this.pumpToDelete) {
-      this.pompes = this.pompes.filter(p => p !== this.pumpToDelete);
+  deletePump(pompe: Pompe) {
+    const index = this.pompes.indexOf(pompe);
+    if (index > -1) {
+      this.pompes.splice(index, 1);
       this.filteredPompes = [...this.pompes];
-      this.pumpToDelete = null;
-      this.closeModal('deleteModal');
+    }
+    this.closeModal('deleteModal');
+  }
+
+  deleteSelected() {
+    this.pompes = this.pompes.filter(pompe => !pompe.selected);
+    this.filteredPompes = [...this.pompes];
+    this.checkSelection();
+  }
+
+  toggleBlockPump(pompe: Pompe) {
+    pompe.status = pompe.status === 'Active' ? 'Inactive' : 'Active';
+    console.log('Changement de statut de la pompe:', pompe);
+  }
+
+  resetSearch() {
+    this.searchTerm = '';
+    this.filteredPompes = [...this.pompes];
+  }
+
+  openModal(modalId: string, pompe?: Pompe) {
+    const modal = document.getElementById(modalId);
+    if (modal) {
+      modal.style.display = 'block';
+    }
+    if (pompe) {
+      this.selectedPump = { ...pompe };
     }
   }
 
-  openModal(modalId: string, pump?: Pompe): void {
-    if (pump) {
-      this.selectedPump = { ...pump };
+  closeModal(modalId: string) {
+    const modal = document.getElementById(modalId);
+    if (modal) {
+      modal.style.display = 'none';
     }
-    document.getElementById(modalId)?.classList.add('show');
-  }
-
-  closeModal(modalId: string): void {
-    document.getElementById(modalId)?.classList.remove('show');
     this.selectedPump = null;
   }
 
-  checkSelection(): void {
-    this.allSelected = this.filteredPompes.every(pump => pump.selected);
+  private createEmptyPump(): Pompe {
+    return {
+      type: '',
+      prix: 0,
+      status: 'Inactive',
+      selected: false
+    };
   }
 }
