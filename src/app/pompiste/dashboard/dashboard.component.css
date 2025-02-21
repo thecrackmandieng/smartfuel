@@ -1,3 +1,11 @@
+/* Global styles */
+body, html {
+  margin: 0;
+  padding: 0;
+  font-family: Arial, sans-serif;
+  height: 100%;
+}
+
 .overlay-card {
   width: 75%; /* Ajustez la largeur selon vos besoins */
   margin: 0 auto; /* Centrer la carte horizontalement */
@@ -101,15 +109,175 @@
 }
 
 .input-fields {
-  display: none; /* Caché par défaut */
+  display: none;
   flex-direction: column;
   align-items: center;
   gap: 10px;
-  margin-top: 15px;
+  margin-top: 5px;
+  width: 200px;
 }
 
-.input-fields label,
+.fuel-card button {
+  transition: opacity 0.3s ease-in-out, transform 0.3s ease-in-out;
+}
+
+button:disabled {
+  opacity: 0.5;
+  pointer-events: none;
+}
+
+button:disabled:hover {
+  transform: scale(1);
+}
+
 .input-fields input {
   width: 100%;
   text-align: center;
+  height: 25px;
+  border-radius: 5px;
+  border: 1px solid #ccc;
+  padding: 5px;
+}
+
+.input-fields label {
+  width: 100%;
+  text-align: center;
+  height: 25px;
+  padding: 5px;
+  font-size: 1.5rem;
+}
+
+.error-message {
+  color: red; /* Couleur du texte d'erreur */
+  font-size: 1.2rem; /* Taille du texte d'erreur */
+  margin-top: 5px; /* Espacement au-dessus du message d'erreur */
+  visibility: hidden; /* Le message d'erreur est caché par défaut */
+}
+
+.error-message.show {
+  visibility: visible; /* Affichez le message d'erreur */
+}
+
+/* Style des boutons */
+.button-group {
+  display: flex;
+  justify-content: space-between;
+  width: 100%;
+  margin-top: 20px;
+}
+
+button {
+  padding: 10px 20px;
+  font-size: 1rem;
+  border: none;
+  cursor: pointer;
+  border-radius: 5px;
+}
+
+.cancel-btn {
+  background-color: #f44336; /* Rouge pour Annuler */
+  color: white;
+}
+
+.validate-btn {
+  background-color: #4caf50; /* Vert pour Valider */
+  color: white;
+}
+
+button:hover {
+  opacity: 0.9;
+}
+
+/* Media queries for responsiveness */
+@media (max-width: 1024px) {
+  .overlay-card {
+    width: 85%; /* Ajuste la largeur pour les tablettes */
+  }
+
+  .fuel-options {
+    padding: 50px;
+    gap: 30px;
+  }
+
+  .fuel-card {
+    flex: 1 1 45%;
+  }
+
+  .input-fields {
+    width: 80%; /* Ajuster la taille des champs d'entrée */
+  }
+
+  .button-group {
+    flex-direction: column;
+    gap: 15px;
+  }
+
+  .cancel-btn, .validate-btn {
+    width: 100%;
+  }
+}
+
+@media (max-width: 768px) {
+  .overlay-card {
+    width: 90%; /* Ajuste la largeur pour les écrans plus petits */
+  }
+
+  .fuel-options {
+    flex-direction: column;
+    padding: 40px;
+    gap: 20px;
+  }
+
+  .fuel-card {
+    flex: 1 1 80%;
+  }
+
+  .button-group {
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  .cancel-btn, .validate-btn {
+    width: 100%;
+  }
+
+  .input-fields {
+    width: 100%;
+  }
+}
+
+@media (max-width: 480px) {
+  .fuel-options {
+    padding: 20px;
+    gap: 15px;
+  }
+
+  .fuel-card {
+    flex: 1 1 100%;
+  }
+
+  .icon-btn {
+    font-size: 8rem; /* Réduit la taille des icônes sur mobile */
+  }
+
+  .fuel-card h2 {
+    font-size: 2.5rem; /* Réduit la taille des titres sur mobile */
+  }
+
+  .input-fields input {
+    font-size: 1.2rem; /* Réduit la taille des champs d'entrée */
+  }
+
+  .error-message {
+    font-size: 1rem;
+  }
+
+  .button-group {
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  .cancel-btn, .validate-btn {
+    width: 100%;
+  }
 }
