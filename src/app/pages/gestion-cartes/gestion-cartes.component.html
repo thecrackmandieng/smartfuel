@@ -1,96 +1,160 @@
 <div class="container">
-    <aside class="sidebar">
-      <app-sidebar></app-sidebar>
-    </aside>
-    
-    <main class="main-content">
-      <div class="card">
-        <!-- Header -->
-        <div class="header">
-          <h1>Gestion des Cartes</h1>
-          <div class="header-buttons">
-            <button class="btn-delete" [disabled]="!hasSelection" (click)="deleteSelected()">
-              <i class="fas fa-trash-alt"></i>Supprimer
-            </button>
-            <button class="btn-add" (click)="addCard()">
-              <i class="fas fa-plus"></i>Ajouter
-            </button>
-          </div>
-        </div>
+  <aside class="sidebar">
+    <app-sidebar></app-sidebar>
+  </aside>
   
-        <!-- Search Bar -->
-        <div class="search-section">
-          <div class="search-container">
-            <i class="fas fa-search search-icon"></i>
-            <input 
-              type="text" 
-              [(ngModel)]="searchTerm"
-              (input)="onSearch()"
-              placeholder="Rechercher par Code Carte, Nom, Prenom..." 
-              class="search-input"
-            />
-          </div>
-          <button class="btn-filter">
-            <i class="fas fa-filter"></i>Filtre
+  <main class="main-content">
+    <div class="card">
+      <!-- Header -->
+      <div class="header">
+        <h1>Gestion des Cartes</h1>
+        <div class="header-buttons">
+          <button class="btn-delete" [disabled]="!hasSelection" (click)="deleteSelected()">
+            <i class="fas fa-trash-alt"></i>Supprimer
+          </button>
+          <button class="btn-add" (click)="openModal('addModal')">
+            <i class="fas fa-plus"></i>Ajouter
           </button>
         </div>
-  
-        <!-- Table -->
-        <div class="table-container">
-          <table>
-            <thead>
-              <tr>
-                <th>
-                  <input type="checkbox" 
-                         [checked]="allSelected"
-                         (change)="toggleAllSelection()"/>
-                </th>
-                <th>Code Carte</th>
-                <th>Prénom et Nom</th>
-                <th>Rôle</th>
-                <th>Status</th>
-                <th>Actions</th>
-                <th>Recharger</th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr *ngFor="let card of filteredCartes">
-                <td>
-                  <input type="checkbox" [(ngModel)]="card.selected"/>
-                </td>
-                <td>{{card.codeCarte}}</td>
-                <td>{{card.prenom}} {{card.nom}}</td>
-                <td>{{card.role}}</td>
-                <td>
-                  <span [class]="'status ' + (card.status === 'Active' ? 'status-active' : 'status-inactive')">
-                    {{card.status}}
-                  </span>
-                </td>
-                <td>
-                  <div class="actions">
-                    <button class="btn-action edit" (click)="editCard(card)">
-                      <i class="fas fa-edit"></i>
-                    </button>
-                    <button class="btn-action view" (click)="viewCard(card)">
-                      <i class="fas fa-eye"></i>
-                    </button>
-                    <button class="btn-action delete" (click)="deleteCard(card)">
-                      <i class="fas fa-trash"></i>
-                    </button>
-                    <button class="btn-action settings">
-                      <i class="fas fa-cog"></i>
-                    </button>
-                  </div>
-                </td>
-                <td>
-                  <button class="btn-recharge" (click)="rechargeCard(card)">
-                    <i class="fas fa-wallet"></i>Recharger
-                  </button>
-                </td>
-              </tr>
-            </tbody>
-          </table>
+      </div>
+
+      <!-- Search Bar -->
+      <div class="search-section">
+        <div class="search-container">
+          <i class="fas fa-search search-icon"></i>
+          <input 
+            type="text" 
+            [(ngModel)]="searchTerm"
+            (input)="onSearch()"
+            placeholder="Rechercher par Code Carte, Nom, Prenom..." 
+            class="search-input"
+          />
         </div>
       </div>
-    </main>
+
+      <!-- Table -->
+      <div class="table-container">
+        <table>
+          <thead>
+            <tr>
+              <th>
+                <input type="checkbox" 
+                       [checked]="allSelected"
+                       (change)="toggleAllSelection()"/>
+              </th>
+              <th>Code Carte</th>
+              <th>Prénom et Nom</th>
+              <th>Rôle</th>
+              <th>Status</th>
+              <th>Actions</th>
+              <th>Recharger</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let card of filteredCartes">
+              <td>
+                <input type="checkbox" [(ngModel)]="card.selected"/>
+              </td>
+              <td>{{card.codeCarte}}</td>
+              <td>{{card.prenom}} {{card.nom}}</td>
+              <td>{{card.role}}</td>
+              <td>
+                <span [class]="'status ' + (card.status === 'Active' ? 'status-active' : 'status-inactive')">
+                  {{card.status}}
+                </span>
+              </td>
+              <td>
+                <div class="actions">
+                  <button class="btn-action edit" [disabled]="card.status !== 'Active'" (click)="openModal('editModal', card)">
+                    <i class="fas fa-edit"></i>
+                  </button>
+                  <button class="btn-action view" [disabled]="card.status !== 'Active'" (click)="openModal('viewModal', card)">
+                    <i class="fas fa-eye"></i>
+                  </button>
+                  <button class="btn-action delete" [disabled]="card.status !== 'Active'" (click)="openModal('deleteModal', card)">
+                    <i class="fas fa-trash"></i>
+                  </button>
+                  <button class="btn-action block" (click)="toggleBlockCard(card)">
+                    <i class="fas" [ngClass]="card.status === 'Active' ? 'fa-unlock' : 'fa-lock'"></i>
+                  </button>
+                </div>
+              </td>
+              <td>
+                <button class="btn-recharge" [disabled]="card.status !== 'Active'" (click)="openModal('rechargeModal', card)">
+                  <i class="fas fa-wallet"></i>Recharger
+                </button>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </main>
+</div>
+
+<!-- Modals -->
+<div id="addModal" class="modal">
+  <div class="modal-content">
+      <span class="close" (click)="closeModal('addModal')">&times;</span>
+      <h2><i class="fas fa-plus"></i> Ajouter une Carte</h2>
+      <label>Code Carte :</label>
+      <input type="text" [(ngModel)]="newCard.codeCarte">
+      <label>Prénom :</label>
+      <input type="text" [(ngModel)]="newCard.prenom">
+      <label>Nom :</label>
+      <input type="text" [(ngModel)]="newCard.nom">
+      <label>Rôle :</label>
+      <input type="text" [(ngModel)]="newCard.role">
+      <button (click)="addCard()">Ajouter</button>
   </div>
+</div>
+
+<div id="editModal" class="modal">
+  <div class="modal-content">
+      <span class="close" (click)="closeModal('editModal')">&times;</span>
+      <h2><i class="fas fa-edit"></i> Modifier la Carte</h2>
+      <label>Code Carte :</label>
+      <input *ngIf="selectedCard" type="text" [(ngModel)]="selectedCard.codeCarte">
+      <label>Prénom :</label>
+      <input *ngIf="selectedCard" type="text" [(ngModel)]="selectedCard.prenom">
+      <label>Nom :</label>
+      <input *ngIf="selectedCard" type="text" [(ngModel)]="selectedCard.nom">
+      <label>Rôle :</label>
+      <input *ngIf="selectedCard" type="text" [(ngModel)]="selectedCard.role">
+      <button *ngIf="selectedCard" (click)="editCard(selectedCard)">Modifier</button>
+  </div>
+</div>
+
+<div id="viewModal" class="modal">
+  <div class="modal-content">
+      <span class="close" (click)="closeModal('viewModal')">&times;</span>
+      <h2><i class="fas fa-eye"></i> Détails de la Carte</h2>
+      <p><strong>Prénom :</strong> {{ selectedCard?.prenom }}</p>
+      <p><strong>Nom :</strong> {{ selectedCard?.nom }}</p>
+      <p><strong>Rôle :</strong> {{ selectedCard?.role }}</p>
+      <p><strong>Status :</strong> {{ selectedCard?.status }}</p>
+  </div>
+</div>
+
+<div id="deleteModal" class="modal">
+  <div class="modal-content">
+      <span class="close" (click)="closeModal('deleteModal')">&times;</span>
+      <h2><i class="fas fa-trash"></i> Confirmer la Suppression</h2>
+      <p>Êtes-vous sûr de vouloir supprimer cette carte ?</p>
+      <button (click)="confirmDeleteCard()">Oui</button>
+      <button (click)="closeModal('deleteModal')">Non</button>
+  </div>
+</div>
+
+<div id="rechargeModal" class="modal">
+  <div class="modal-content">
+      <span class="close" (click)="closeModal('rechargeModal')">&times;</span>
+      <h2><i class="fas fa-wallet"></i> Recharger la Carte</h2>
+      <p><strong> {{ selectedCard?.prenom }} {{ selectedCard?.nom }}</strong></p>
+      <p><strong>Solde Actuel :</strong> {{ selectedCard?.solde }} FCFA</p>
+      <label>Montant à Recharger :</label>
+      <input type="number" [(ngModel)]="rechargeAmount">
+      <button (click)="selectedCard && rechargeCard(selectedCard)">Confirmer</button>
+      <button (click)="closeModal('rechargeModal')">Annuler</button>
+  </div>
+</div>
