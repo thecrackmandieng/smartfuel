@@ -399,9 +399,3 @@ color: #d1d5db;}
       display: none;
   }
 }
-
-.error {
-  color: red;
-  font-size: 0.875em; /* Taille de police légèrement plus petite */
-  margin-top: 5px; /* Espacement au-dessus du message d'erreur */
-}
