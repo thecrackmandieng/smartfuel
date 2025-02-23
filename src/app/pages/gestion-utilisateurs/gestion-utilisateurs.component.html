@@ -94,15 +94,7 @@
           </tbody>
         </table>
       </div>
-      <!-- Pagination -->
-<div class="pagination">
-  <button (click)="changePage(currentPage - 1)" [disabled]="currentPage === 1">Précédent</button>
-  
-  <span>Page {{ currentPage }} sur {{ totalPages }}</span>
-  
-  <button (click)="changePage(currentPage + 1)" [disabled]="currentPage * itemsPerPage >= totalItems">Suivant</button>
-</div>
-
+      
     </div>
   </main>
 </div>

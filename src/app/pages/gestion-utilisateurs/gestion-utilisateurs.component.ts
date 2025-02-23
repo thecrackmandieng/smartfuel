@@ -36,9 +36,6 @@ interface Errors {
   styleUrls: ['./gestion-utilisateurs.component.css']
 })
 export class GestionUtilisateursComponent implements OnInit {
-  currentPage: number = 1;
-  itemsPerPage: number = 5; // Nombre d'éléments par page
-  totalItems: number = 0; // Nombre total d'éléments
   modalMessage: string = ""; // Déclaration de la variable pour éviter l'erreur de compilation
   searchTerm: string = '';
   allSelected: boolean = false;
