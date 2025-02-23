@@ -34,4 +34,23 @@ export class CrudService {
   editUser(userId: string, userData: any): Observable<any> {
     return this.http.put(`${this.baseUrl}/user/${userId}`, userData);
 }
+
+ // Supprimer un utilisateur
+ deleteUser(userId: string): Observable<any> {
+  return this.http.delete(`${this.baseUrl}/${userId}`);
+}
+
+ // Blocage multiple des utilisateurs
+ bloquerMultiple(userIds: string[]): Observable<any> {
+  return this.http.put(`${this.baseUrl}/bloquer-multiple`, { userIds });
+}
+
+// Suppression multiple des utilisateurs
+deleteMultipleUsers(userIds: string[]): Observable<any> {
+  // Envoyer un objet avec une clé 'ids' qui contient le tableau d'IDs
+  return this.http.delete(`${this.baseUrl}/delete-multiple`, { body: { ids: userIds } });
+}
+
+
+
 }

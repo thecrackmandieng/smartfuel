@@ -9,12 +9,14 @@
       <div class="header">
         <h1>Gestion des Utilisateurs</h1>
         <div class="header-buttons">
-          <button class="btn btn-delete" [disabled]="!hasSelection" (click)="deleteSelected()">
-            <i class="fas fa-trash-alt"></i> Supprimer
-          </button>
+          <button class="btn-delete" (click)="deleteSelectedUsers()">Supprimer sélectionnés</button>
           <button class="btn btn-add" (click)="openModal('addModal')">
             <i class="fas fa-plus"></i> Ajouter
           </button>
+
+          <button class="btn-toggle" (click)="blockMultipleUsers()">Bloquer/Débloquer sélectionnés</button>
+
+
         </div>
       </div>
 
@@ -92,10 +94,35 @@
           </tbody>
         </table>
       </div>
-      
+      <!-- Pagination -->
+<div class="pagination">
+  <button (click)="changePage(currentPage - 1)" [disabled]="currentPage === 1">Précédent</button>
+  
+  <span>Page {{ currentPage }} sur {{ totalPages }}</span>
+  
+  <button (click)="changePage(currentPage + 1)" [disabled]="currentPage * itemsPerPage >= totalItems">Suivant</button>
+</div>
+
     </div>
   </main>
 </div>
+
+<div id="viewModal" class="modal">
+  <div class="modal-content">
+    <span class="close" (click)="closeModal('viewModal')">&times;</span>
+    <h2><i class="fas fa-user"></i> Détails de l'Utilisateur</h2>
+
+    <p><strong>Matricule :</strong> {{ selectedUser?.matricule }}</p>
+    <p><strong>Nom :</strong> {{ selectedUser?.nom }}</p>
+    <p><strong>Prénom :</strong> {{ selectedUser?.prenom }}</p>
+    <p><strong>Email :</strong> {{ selectedUser?.email }}</p>
+    <p><strong>Téléphone :</strong> {{ selectedUser?.telephone }}</p>
+    <p><strong>Rôle :</strong> {{ selectedUser?.role }}</p>
+
+    <button (click)="closeModal('viewModal')" class="btn btn-close">Fermer</button>
+  </div>
+</div>
+
 
 <!-- Modals -->
 <div id="addModal" class="modal">
@@ -120,63 +147,84 @@
     <div *ngIf="errors['telephone']" class="error">{{ errors['telephone'] }}</div>
     
     <label>Rôle :</label>
-    <select [(ngModel)]="newUser.role" class="select-field">
+    <select [(ngModel)]="newUser.role" (change)="onRoleChange()" class="select-field">
         <option value="" disabled selected>Sélectionnez un rôle</option>
-        <option value="admin">Admin</option>
-        <option value="client">Utilisateur</option>
-        <option value="pompiste">Pompiste</option>
+        <option value="admin">admin</option>
+        <option value="client">client</option>
+        <option value="pompiste">pompiste</option>
     </select>
     <div *ngIf="errors['role']" class="error">{{ errors['role'] }}</div>
+    
+    <!-- Champ carburant visible uniquement si le rôle est client -->
+    <div *ngIf="newUser.role === 'client'">
+      <label>Carburant :</label>
+      <select [(ngModel)]="newUser.carburant" class="select-field">
+        <option value="" disabled selected>Sélectionnez un carburant</option>
+        <option value="essence">Essence</option>
+        <option value="petrole">Pétrole</option>
+        <option value="gazoile">Gazoile</option>
+      </select>
+      <div *ngIf="errors['carburant']" class="error">{{ errors['carburant'] }}</div>
+    </div>
 
     <button (click)="addUser()" class="btn btn-add">Ajouter</button>
   </div>
 </div>
 
+
+<!-- MODAL D'ÉDITION DE L'UTILISATEUR -->
 <div id="editModal" class="modal">
   <div class="modal-content">
     <span class="close" (click)="closeModal('editModal')">&times;</span>
     <h2><i class="fas fa-user-edit"></i> Modifier l'Utilisateur</h2>
     
     <input *ngIf="selectedUser" type="text" [(ngModel)]="selectedUser.matricule" disabled class="input-field">
-    
-    <label>Prenom :</label>
+
+    <label>Prénom :</label>
     <input *ngIf="selectedUser" type="text" [(ngModel)]="selectedUser.prenom" class="input-field">
     <div *ngIf="errors['prenom']" class="error">{{ errors['prenom'] }}</div>
-    
+
     <label>Nom :</label>
     <input *ngIf="selectedUser" type="text" [(ngModel)]="selectedUser.nom" class="input-field">
     <div *ngIf="errors['nom']" class="error">{{ errors['nom'] }}</div>
-    
+
     <label>Email :</label>
     <input *ngIf="selectedUser" type="email" [(ngModel)]="selectedUser.email" class="input-field">
     <div *ngIf="errors['email']" class="error">{{ errors['email'] }}</div>
-    
+
     <label>Téléphone :</label>
     <input *ngIf="selectedUser" type="text" [(ngModel)]="selectedUser.telephone" class="input-field">
     <div *ngIf="errors['telephone']" class="error">{{ errors['telephone'] }}</div>
-    
+
     <label>Rôle :</label>
     <select *ngIf="selectedUser" [(ngModel)]="selectedUser.role" class="select-field">
-        <option value="Admin">Admin</option>
-        <option value="Client">Client</option>
-        <option value="Pompiste">Pompiste</option>
+        <option value="admin">Admin</option>
+        <option value="client">Client</option>
+        <option value="pompiste">Pompiste</option>
     </select>
     <div *ngIf="errors['role']" class="error">{{ errors['role'] }}</div>
-    
-    <button (click)="selectedUser ? editUser(selectedUser) : null" class="btn btn-edit">Modifier</button>
+
+    <button *ngIf="selectedUser" (click)="editUser(selectedUser)" class="btn btn-edit">Modifier</button>
   </div>
 </div>
 
-<div id="viewModal" class="modal">
-  <div class="modal-content">
-      <span class="close" (click)="closeModal('viewModal')">&times;</span>
-      <h2><i class="fas fa-user"></i> Détails de l'Utilisateur</h2>
-      <p><strong>Prenom :</strong> {{ selectedUser?.prenom }}</p>
-      <p><strong>Nom :</strong> {{ selectedUser?.nom }}</p>
-      <p><strong>Email :</strong> {{ selectedUser?.email }}</p>
-      <p><strong>Téléphone :</strong> {{ selectedUser?.telephone }}</p>
-      <p><strong>Rôle :</strong> {{ selectedUser?.role }}</p>
-      <p><strong>Status :</strong> {{ selectedUser?.status }}</p>
+<!-- MODAL DE SUCCÈS -->
+<div id="successModal" class="modal">
+  <div class="modal-content success">
+    <span class="close" (click)="closeModal('successModal')">&times;</span>
+    <h2><i class="fas fa-check-circle"></i> Succès</h2>
+    <p>{{ modalMessage }}</p>
+    <button (click)="closeModal('successModal')" class="btn btn-success">OK</button>
+  </div>
+</div>
+
+<!-- MODAL D'ERREUR -->
+<div id="errorModal" class="modal">
+  <div class="modal-content error">
+    <span class="close" (click)="closeModal('errorModal')">&times;</span>
+    <h2><i class="fas fa-exclamation-circle"></i> Erreur</h2>
+    <p>{{ modalMessage }}</p>
+    <button (click)="closeModal('errorModal')" class="btn btn-error">Fermer</button>
   </div>
 </div>
 
@@ -185,10 +233,11 @@
       <span class="close" (click)="closeModal('deleteModal')">&times;</span>
       <h2><i class="fas fa-user-times"></i> Confirmer la Suppression</h2>
       <p>Êtes-vous sûr de vouloir supprimer cet utilisateur ?</p>
-      <button (click)="confirmDeleteUser()" class="btn btn-confirm">Oui</button>
-      <button (click)="closeModal('deleteModal')" class="btn btn-cancel">Non</button>
+      <button (click)="confirmDeleteUser()">Oui</button>
+      <button (click)="closeModal('deleteModal')">Non</button>
   </div>
 </div>
+
 
 <div id="assignModal" class="modal">
   <div class="modal-content">

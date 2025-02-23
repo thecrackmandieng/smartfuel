@@ -17,11 +17,15 @@ interface Utilisateur {
   status: string;
   selected?: boolean;
   isFrozen: boolean; // Indique si les champs sont gelés
+  isProcessing?: boolean; // Ajout de cette propriété pour gérer l'état du bouton
+  carburant?: string; // Ajouter cette ligne
+  litresAchetes?: number; // Ajouter cette ligne
 }
 
 interface Errors {
   [key: string]: string; // Permet d'accéder aux messages d'erreur par clé
 }
+
 
 
 @Component({
@@ -32,6 +36,10 @@ interface Errors {
   styleUrls: ['./gestion-utilisateurs.component.css']
 })
 export class GestionUtilisateursComponent implements OnInit {
+  currentPage: number = 1;
+  itemsPerPage: number = 5; // Nombre d'éléments par page
+  totalItems: number = 0; // Nombre total d'éléments
+  modalMessage: string = ""; // Déclaration de la variable pour éviter l'erreur de compilation
   searchTerm: string = '';
   allSelected: boolean = false;
   hasSelection: boolean = false;
@@ -117,12 +125,30 @@ export class GestionUtilisateursComponent implements OnInit {
     this.hasSelection = this.filteredUtilisateurs.some(user => user.selected);
   }
 
+    // Méthode pour gérer le changement de rôle
+    onRoleChange() {
+      // Logique à exécuter lorsque le rôle change
+      if (this.newUser.role === 'client') {
+        this.newUser.carburant = ''; // Réinitialiser ou ajouter la logique nécessaire
+        this.newUser.litresAchetes = 0; // Réinitialiser ou ajouter la logique nécessaire
+      } else {
+        // Logique pour d'autres rôles
+        delete this.newUser.carburant; // Si nécessaire, supprimer le carburant
+        delete this.newUser.litresAchetes; // Si nécessaire, supprimer les litres achetés
+      }
+    }
+    
   // Ajout d'un utilisateur via l'API
   addUser() {
     if (!this.validateForm()) {
       return; // Stopper l'exécution si le formulaire est invalide
     }
-
+  
+    // Ajouter le champ carburant si le rôle est 'client'
+    if (this.newUser.role === 'client') {
+      this.newUser.carburant = this.newUser.carburant || ''; // Assurez-vous qu'il a une valeur par défaut si non spécifié
+    }
+  
     this.crudService.addUser(this.newUser).subscribe(
       (user: Utilisateur) => {
         this.utilisateurs.unshift(user);
@@ -137,20 +163,13 @@ export class GestionUtilisateursComponent implements OnInit {
       }
     );
   }
+  
 
 
   viewUser(user: Utilisateur) {
     console.log('Affichage des détails de l\'utilisateur:', user);
   }
 
-  deleteUser(user: Utilisateur) {
-    const index = this.utilisateurs.indexOf(user);
-    if (index > -1) {
-      this.utilisateurs.splice(index, 1);
-      this.filteredUtilisateurs = [...this.utilisateurs];
-    }
-    this.closeModal('deleteModal');
-  }
 
   confirmDeleteUser() {
     if (this.selectedUser) {
@@ -159,13 +178,6 @@ export class GestionUtilisateursComponent implements OnInit {
     }
   }
   
-
-  deleteSelected() {
-    this.utilisateurs = this.utilisateurs.filter(user => !user.selected);
-    this.filteredUtilisateurs = [...this.utilisateurs];
-    this.checkSelection();
-  }
-
 
   toggleBlockUser(user: Utilisateur) {
     const userId = user._id; // Assurez-vous que vous récupérez l'ID correct
@@ -223,28 +235,129 @@ export class GestionUtilisateursComponent implements OnInit {
 }
 
 
-editUser(selectedUser: Utilisateur) {
-  if (!this.selectedUser) {
-      return; // Arrête l'exécution si l'utilisateur sélectionné est nul ou si le formulaire est invalide
+editUser(selectedUser: Utilisateur | null) {
+  console.log("Bouton Modifier cliqué", selectedUser); // Vérifier si la fonction est appelée
+
+  if (!selectedUser) {
+      console.warn("Utilisateur sélectionné introuvable !");
+      return;
   }
 
-  this.crudService.editUser(this.selectedUser._id, this.selectedUser).subscribe(
-      (user: Utilisateur) => {
-          const index = this.utilisateurs.findIndex(u => u._id === user._id);
-          if (index !== -1) {
-              this.utilisateurs[index] = user; // Mettre à jour l'utilisateur dans la liste
-              this.filteredUtilisateurs = [...this.utilisateurs];
-              this.errors = {}; // Réinitialiser les erreurs après un succès
-              this.closeModal('editModal');
-              this.cdr.detectChanges(); // Forcer la détection des changements
-          }
-      },
-      (error: any) => {
-          console.error("Erreur lors de la modification de l'utilisateur", error);
+  this.crudService.editUser(selectedUser._id, selectedUser).subscribe(
+    (response: any) => {
+      console.log("Réponse API :", response); // Vérifier la réponse de l'API
+
+      const index = this.utilisateurs.findIndex(u => u._id === response.item._id);
+      if (index !== -1) {
+        this.utilisateurs[index] = response.item;
+        this.filteredUtilisateurs = [...this.utilisateurs];
+        this.errors = {};
+        this.closeModal('editModal'); // Fermer le modal d'édition
+        this.showModal('successModal', "Utilisateur modifié avec succès !");
+        this.cdr.detectChanges();
       }
+    },
+    (error: any) => {
+      console.error("Erreur API :", error);
+      this.showModal('errorModal', "Erreur lors de la modification de l'utilisateur !");
+    }
   );
 }
 
+deleteUser(user: Utilisateur) {
+  if (!user || !user._id) {
+    console.warn("Utilisateur invalide ou ID manquant !");
+    return;
+  }
+
+  this.crudService.deleteUser(user._id).subscribe(
+    (response) => {
+      console.log("Utilisateur supprimé :", response);
+
+      // Supprimer l'utilisateur de la liste après confirmation de l'API
+      this.utilisateurs = this.utilisateurs.filter(u => u._id !== user._id);
+      this.filteredUtilisateurs = [...this.utilisateurs];
+
+      this.closeModal('deleteModal');
+      this.showModal('successModal', "Utilisateur supprimé avec succès !");
+    },
+    (error) => {
+      console.error("Erreur lors de la suppression de l'utilisateur", error);
+      this.showModal('errorModal', "Erreur lors de la suppression de l'utilisateur !");
+    }
+  );
+}
+
+blockMultipleUsers() {
+  const selectedUsers = this.filteredUtilisateurs.filter(user => user.selected);
+
+  if (selectedUsers.length === 0) {
+    console.warn("Aucun utilisateur sélectionné !");
+    return;
+  }
+
+  selectedUsers.forEach(user => {
+    const userId = user._id;
+    user.isProcessing = true; // Désactive temporairement le bouton
+
+    // Détermine l'action (archivage ou désarchivage)
+    const action = user.status === 'actif' ? this.crudService.addarchive(userId) : this.crudService.desarchive(userId);
+
+    action.subscribe(
+      () => {
+        // Mise à jour de l'état après succès
+        user.status = user.status === 'actif' ? 'inactif' : 'actif';
+        user.isProcessing = false; // Réactive le bouton
+      },
+      (error) => {
+        console.error(`Erreur lors de la mise à jour de l'utilisateur ${userId}`, error);
+        user.isProcessing = false; // Réactive le bouton en cas d'échec
+      }
+    );
+  });
+
+  this.cdr.detectChanges(); // Forcer la mise à jour de l'affichage
+}
+
+deleteSelectedUsers() {
+  const selectedUserIds = this.filteredUtilisateurs
+    .filter(user => user.selected)  // Filtre les utilisateurs sélectionnés
+    .map(user => user._id);         // Récupère les IDs des utilisateurs
+
+  if (selectedUserIds.length === 0) {
+    console.warn("Aucun utilisateur sélectionné !");
+    return;
+  }
+
+  // Appel au service pour supprimer les utilisateurs sélectionnés
+  this.crudService.deleteMultipleUsers(selectedUserIds).subscribe(
+    (response) => {
+      console.log("Utilisateurs supprimés avec succès !", response);
+      
+      // Mettre à jour l'affichage en filtrant les utilisateurs supprimés
+      this.filteredUtilisateurs = this.filteredUtilisateurs.filter(user => !user.selected);
+      
+      // Optionnel : afficher un message de succès ou mettre à jour d'autres états
+    },
+    (error) => {
+      console.error("Erreur lors de la suppression des utilisateurs", error);
+      
+      // Optionnel : afficher un message d'erreur à l'utilisateur
+    }
+  );
+}
+
+
+
+
+// Fonction pour afficher une modale avec un message
+showModal(modalId: string, message: string) {
+  this.modalMessage = message;
+  const modal = document.getElementById(modalId);
+  if (modal) {
+    modal.style.display = 'block';
+  }
+}
 
 
   closeModal(modalId: string) {

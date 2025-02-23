@@ -405,3 +405,59 @@ color: #d1d5db;}
   font-size: 0.875em; /* Taille de police légèrement plus petite */
   margin-top: 5px; /* Espacement au-dessus du message d'erreur */
 }
+
+
+.btn-toggle {
+  background-color: #007bff; /* Bleu par défaut */
+  color: white;
+  border: none;
+  padding: 10px 15px;
+  font-size: 16px;
+  font-weight: bold;
+  cursor: pointer;
+  border-radius: 5px;
+  transition: background-color 0.3s, transform 0.2s;
+}
+
+.btn-toggle:hover {
+  background-color: #0056b3; /* Bleu plus foncé au survol */
+}
+
+.btn-toggle:active {
+  transform: scale(0.95); /* Effet de clic */
+}
+
+.btn-toggle:disabled {
+  background-color: gray;
+  cursor: not-allowed;
+  opacity: 0.6;
+}
+
+
+.modal {
+  display: none; /* Caché par défaut */
+  position: fixed; /* Reste à la même position même en scroll */
+  z-index: 1; /* Au-dessus de tout le contenu */
+  left: 0;
+  top: 0;
+  width: 100%; /* Prend toute la largeur */
+  height: 100%; /* Prend toute la hauteur */
+  overflow: auto; /* Ajoute un défilement si nécessaire */
+  background-color: rgb(0,0,0); /* Couleur de fond */
+  background-color: rgba(0,0,0,0.4); /* Couleur de fond avec transparence */
+}
+
+.modal-content {
+  background-color: #fefefe;
+  margin: 15% auto; /* 15% du haut et centré */
+  padding: 20px;
+  border: 1px solid #888;
+  width: 80%; /* Peut être modifié pour la largeur souhaitée */
+}
+
+.close {
+  color: #aaa;
+  float: right;
+  font-size: 28px;
+  font-weight: bold;
+}
