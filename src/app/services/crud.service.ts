@@ -51,6 +51,10 @@ deleteMultipleUsers(userIds: string[]): Observable<any> {
   return this.http.delete(`${this.baseUrl}/delete-multiple`, { body: { ids: userIds } });
 }
 
+// Recharger une carte
+rechargeCarte(userId: string, data: any): Observable<any> {
+  return this.http.put(`${this.baseUrl}/payment/rechargeCarte/${userId}`, data);
+}
 
 
 }

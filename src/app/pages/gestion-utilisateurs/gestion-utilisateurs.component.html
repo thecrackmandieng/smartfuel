@@ -117,51 +117,65 @@
 
 
 <!-- Modals -->
+<!-- Modale d'ajout d'utilisateur -->
 <div id="addModal" class="modal">
   <div class="modal-content">
     <span class="close" (click)="closeModal('addModal')">&times;</span>
     <h2><i class="fas fa-user-plus"></i> Ajouter un Utilisateur</h2>
     
-    <label>Prenom :</label>
-    <input type="text" [(ngModel)]="newUser.prenom" class="input-field">
+    <!-- Champ Prénom -->
+    <label for="prenom">Prénom :</label>
+    <input type="text" id="prenom" [(ngModel)]="newUser.prenom" class="input-field" placeholder="Entrez le prénom">
     <div *ngIf="errors['prenom']" class="error">{{ errors['prenom'] }}</div>
-    
-    <label>Nom :</label>
-    <input type="text" [(ngModel)]="newUser.nom" class="input-field">
+
+    <!-- Champ Nom -->
+    <label for="nom">Nom :</label>
+    <input type="text" id="nom" [(ngModel)]="newUser.nom" class="input-field" placeholder="Entrez le nom">
     <div *ngIf="errors['nom']" class="error">{{ errors['nom'] }}</div>
-    
-    <label>Email :</label>
-    <input type="email" [(ngModel)]="newUser.email" class="input-field">
+
+    <!-- Champ Email -->
+    <label for="email">Email :</label>
+    <input type="email" id="email" [(ngModel)]="newUser.email" class="input-field" placeholder="exemple@mail.com">
     <div *ngIf="errors['email']" class="error">{{ errors['email'] }}</div>
-    
-    <label>Téléphone :</label>
-    <input type="text" [(ngModel)]="newUser.telephone" class="input-field">
+
+    <!-- Champ Téléphone -->
+    <label for="telephone">Téléphone :</label>
+    <input type="text" id="telephone" [(ngModel)]="newUser.telephone" class="input-field" placeholder="Entrez le numéro">
     <div *ngIf="errors['telephone']" class="error">{{ errors['telephone'] }}</div>
-    
-    <label>Rôle :</label>
-    <select [(ngModel)]="newUser.role" (change)="onRoleChange()" class="select-field">
+
+    <!-- Sélection du Rôle -->
+    <label for="role">Rôle :</label>
+    <select id="role" [(ngModel)]="newUser.role" (change)="onRoleChange()" class="select-field">
         <option value="" disabled selected>Sélectionnez un rôle</option>
-        <option value="admin">admin</option>
-        <option value="client">client</option>
-        <option value="pompiste">pompiste</option>
+        <option value="admin">Admin</option>
+        <option value="client">Client</option>
+        <option value="pompiste">Pompiste</option>
     </select>
     <div *ngIf="errors['role']" class="error">{{ errors['role'] }}</div>
-    
-    <!-- Champ carburant visible uniquement si le rôle est client -->
-    <div *ngIf="newUser.role === 'client'">
-      <label>Carburant :</label>
-      <select [(ngModel)]="newUser.carburant" class="select-field">
+
+    <!-- Si le rôle est "client", afficher les champs supplémentaires -->
+    <div *ngIf="newUser.role === 'client'" class="client-fields">
+      <!-- Sélection du Carburant -->
+      <label for="carburant">Carburant :</label>
+      <select id="carburant" [(ngModel)]="newUser.carburant" class="select-field">
         <option value="" disabled selected>Sélectionnez un carburant</option>
         <option value="essence">Essence</option>
         <option value="petrole">Pétrole</option>
         <option value="gazoile">Gazoile</option>
       </select>
       <div *ngIf="errors['carburant']" class="error">{{ errors['carburant'] }}</div>
+
+      <!-- Champ pour le montant de la recharge -->
+      <label for="montant">Montant de recharge :</label>
+      <input type="number" id="montant" [(ngModel)]="newUser.montantRecharge" class="input-field" placeholder="Entrez le montant">
+      <div *ngIf="errors['montantRecharge']" class="error">{{ errors['montantRecharge'] }}</div>
     </div>
 
+    <!-- Bouton d'ajout -->
     <button (click)="addUser()" class="btn btn-add">Ajouter</button>
   </div>
 </div>
+
 
 
 <!-- MODAL D'ÉDITION DE L'UTILISATEUR -->
