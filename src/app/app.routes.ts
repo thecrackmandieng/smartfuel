@@ -13,6 +13,7 @@ import { GestionPompesComponent } from './pages/gestion-pompes/gestion-pompes.co
 export const routes: Routes = [
   { path: '', component: LoginComponent },
   { path: 'admin/dashboard', component: AdminDashboardComponent, canActivate: [AuthGuard] },
+  { path: 'admin/dashboaradmin', component: AdminDashboardComponent },
   { path: 'pompiste/dashboard', component: PompisteDashboardComponent, canActivate: [AuthGuard] },
   { path: 'client/dashboard', component: ClientDashboardComponent, canActivate: [AuthGuard] },
 

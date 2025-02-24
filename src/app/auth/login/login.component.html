@@ -67,4 +67,13 @@
       <div *ngIf="errorMessage" class="error-message">{{ errorMessage }}</div>
     </form>
   </div>
+
+  <!-- Modal d'erreur -->
+  <div class="modal" [class.show]="showErrorModal" *ngIf="showErrorModal">
+    <div class="modal-content">
+      <h3>Erreur</h3>
+      <p>{{ errorMessage }}</p>
+      <button (click)="closeModal()">Fermer</button>
+    </div>
+  </div>
 </div>

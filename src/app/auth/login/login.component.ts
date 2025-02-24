@@ -3,6 +3,7 @@ import { Router } from '@angular/router';
 import { AuthService } from '../../services/auth.service';
 import { FormsModule } from '@angular/forms';
 import { CommonModule } from '@angular/common';
+import { RfidService } from '../../services/rfid.service'; // Import du service
 
 @Component({
   selector: 'app-login',
@@ -27,11 +28,51 @@ export class LoginComponent implements AfterViewInit {
   isLocked = false;
   lockTimeLeft = 15;
   progress = 100;
+  showErrorModal: boolean = false;
 
-  constructor(private authService: AuthService, private router: Router) {}
+  constructor(private authService: AuthService, private router: Router, private rfidService: RfidService) {}
 
   ngAfterViewInit(): void {
     this.input1.nativeElement.focus(); // Focus initial sur le premier champ
+     // Écouter les scans RFID et afficher les informations de l'utilisateur
+       
+  // Écouter les scans RFID et afficher les informations de l'utilisateur
+  this.rfidService.listenForScan().subscribe(
+    (user) => {
+      console.log('🆔 Utilisateur détecté via RFID:', user);
+      console.log(`Utilisateur détecté: ${user.nom} - Rôle: ${user.role}`);
+
+      if (user.role === 'admin') {
+        this.router.navigate(['admin/dashboaradmin']); // Rediriger vers la page admin/dashboardadmin
+      } else {
+        console.log('Accès refusé : utilisateur non admin.');
+        this.showError('Accès refusé : utilisateur non admin.'); // Afficher le message d'erreur
+      }
+    },
+    (error) => {
+      console.error('Erreur lors de la lecture RFID:', error);
+      this.showError('Erreur lors de la lecture RFID.'); // Afficher un message d'erreur générique
+    }
+  );
+
+  // Corriger la gestion des erreurs
+  this.rfidService.listenForErrors().subscribe(
+    (errorMessage: string) => { // Changez ici pour recevoir une chaîne de caractères
+      this.showError(errorMessage); // Afficher le message d'erreur reçu
+    }
+  );
+  }
+
+  // Fonction pour afficher le modal d'erreur
+  showError(message: string) {
+    this.errorMessage = message;
+    this.showErrorModal = true;
+  }
+
+  // Fonction pour fermer le modal
+  closeModal() {
+    this.showErrorModal = false;
+    this.errorMessage = ''; // Réinitialise le message d'erreur
   }
 
   // Changement de typage pour 'controlName' afin qu'il soit l'une des clés de credentials
