@@ -2,16 +2,7 @@ import { Component } from '@angular/core';
 import { SidebarComponent } from '../../sidebar/sidebar.component';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-
-interface Carte {
-  codeCarte: string;
-  prenom: string;
-  nom: string;
-  role: string;
-  status: string;
-  solde: number;
-  selected?: boolean;
-}
+import { ClientService, Client } from '../../services/client.service';
 
 @Component({
   selector: 'app-gestion-cartes',
@@ -21,104 +12,162 @@ interface Carte {
   styleUrls: ['./gestion-cartes.component.css']
 })
 export class GestionCartesComponent {
-user: any;
-confirmDeleteCard() {
-throw new Error('Method not implemented.');
-}
+  // Propriété de recherche
   searchTerm: string = '';
   allSelected: boolean = false;
   hasSelection: boolean = false;
-  filteredCartes: Carte[] = [
-    { codeCarte: '123456', prenom: 'Ali', nom: 'Diop', role: 'utilisateur', status: 'Active', solde: 10000, selected: false },
-    { codeCarte: '654321', prenom: 'Awa', nom: 'Ba', role: 'utilisateur', status: 'Inactive', solde: 5000, selected: false },
-    { codeCarte: '654321', prenom: 'Awa', nom: 'Ba', role: 'utilisateur', status: 'Inactive', solde: 5000, selected: false },
-    { codeCarte: '654321', prenom: 'Awa', nom: 'Ba', role: 'utilisateur', status: 'Inactive', solde: 5000, selected: false },
-    { codeCarte: '654321', prenom: 'Awa', nom: 'Ba', role: 'utilisateur', status: 'Inactive', solde: 5000, selected: false },
-    { codeCarte: '654321', prenom: 'Awa', nom: 'Ba', role: 'utilisateur', status: 'Inactive', solde: 5000, selected: false }
 
+  // « filteredCartes » et « cartes » contiendront la liste des clients (cartes)
+  filteredCartes: Client[] = [];
+  cartes: Client[] = [];
 
+  // Propriétés pour le formulaire d'ajout et de modification
+  newCard: Client = this.createEmptyClient();
+  selectedCard: Client | null = null;
 
-
-  ];
-  cartes: Carte[] = [...this.filteredCartes];
-  newCard: Carte = this.createEmptyCard();
-  selectedCard: Carte | null = null;
+  // Montant pour le rechargement
   rechargeAmount: number = 0;
 
+  constructor(private clientService: ClientService) {
+    if (!clientService) {
+      console.error("Le service ClientService est undefined !");
+    }
+    // Chargement initial des clients
+    this.loadClients();
+  }
+  // Récupération des clients via le service
+  loadClients() {
+    this.clientService.getClients().subscribe(
+      (clients) => {
+        this.cartes = clients;
+        this.filteredCartes = [...clients];
+      },
+      (error) => {
+        console.error("Erreur lors de la récupération des clients", error);
+      }
+    );
+  }
+  // Filtrer la liste en fonction de la recherche
   onSearch() {
     if (!this.searchTerm.trim()) {
       this.filteredCartes = [...this.cartes];
       return;
     }
     const searchLower = this.searchTerm.toLowerCase();
-    this.filteredCartes = this.cartes.filter(card => 
-      card.codeCarte.toLowerCase().includes(searchLower) ||
+    this.filteredCartes = this.cartes.filter(card =>
+      (card.codeCarte || '').toLowerCase().includes(searchLower) ||
       card.prenom.toLowerCase().includes(searchLower) ||
       card.nom.toLowerCase().includes(searchLower) ||
       card.role.toLowerCase().includes(searchLower)
     );
   }
-
+  // Sélectionner/désélectionner toutes les cartes
   toggleAllSelection() {
     this.allSelected = !this.allSelected;
     this.filteredCartes.forEach(card => card.selected = this.allSelected);
     this.checkSelection();
   }
-
+  // Vérifier si une carte est sélectionnée
   checkSelection() {
     this.hasSelection = this.filteredCartes.some(card => card.selected);
   }
-
+  // Ajout d'une nouvelle carte/client via le service
   addCard() {
-    this.cartes.unshift(this.newCard);
-    this.filteredCartes = [...this.cartes];
-    this.newCard = this.createEmptyCard();
-    this.closeModal('addModal');
+    this.clientService.addClient(this.newCard).subscribe(
+      (response) => {
+        // On récupère le client ajouté depuis la réponse
+        const addedClient = response.client;
+        this.cartes.unshift(addedClient);
+        this.filteredCartes = [...this.cartes];
+        this.newCard = this.createEmptyClient();
+        this.closeModal('addModal');
+      },
+      (error) => {
+        console.error("Erreur lors de l'ajout du client", error);
+      }
+    );
   }
-
-  editCard(card: Carte) {
-    console.log('Modification de la carte:', card);
-    this.closeModal('editModal');
-  }
-
-  viewCard(card: Carte) {
-    console.log('Affichage des détails de la carte:', card);
-  }
-
-  deleteCard(card: Carte) {
-    const index = this.cartes.indexOf(card);
-    if (index > -1) {
-      this.cartes.splice(index, 1);
-      this.filteredCartes = [...this.cartes];
+  // Modification d'un client
+  editCard(card: Client) {
+    if (card._id) {
+      this.clientService.updateClient(card._id, card).subscribe(
+        (response) => {
+          console.log("Client modifié avec succès", response);
+          this.loadClients();
+          this.closeModal('editModal');
+        },
+        (error) => {
+          console.error("Erreur lors de la modification du client", error);
+        }
+      );
     }
-    this.closeModal('deleteModal');
   }
-
+  // Suppression d'une carte/client
+  deleteCard(card: Client) {
+    if (card._id) {
+      this.clientService.deleteClient(card._id).subscribe(
+        (response) => {
+          this.cartes = this.cartes.filter(c => c._id !== card._id);
+          this.filteredCartes = [...this.cartes];
+          this.closeModal('deleteModal');
+        },
+        (error) => {
+          console.error("Erreur lors de la suppression du client", error);
+        }
+      );
+    }
+  }
+  // Suppression de toutes les cartes sélectionnées
   deleteSelected() {
-    this.cartes = this.cartes.filter(card => !card.selected);
-    this.filteredCartes = [...this.cartes];
-    this.checkSelection();
+    this.filteredCartes.filter(card => card.selected && card._id).forEach(card => {
+      this.clientService.deleteClient(card._id as string).subscribe(
+        (response) => {
+          console.log("Client supprimé", response);
+          this.loadClients();
+        },
+        (error) => {
+          console.error("Erreur lors de la suppression d'un client", error);
+        }
+      );
+    });
   }
-
-  rechargeCard(card: Carte) {
-    if (card) {
-      card.solde += this.rechargeAmount;
-      console.log('Recharge de la carte:', card, 'Montant:', this.rechargeAmount);
-      this.closeModal('rechargeModal');
+  // Rechargement de la carte (mise à jour du solde)
+  rechargeCard(card: Client) {
+    if (card && card._id) {
+      const updatedData = { solde: (card.solde || 0) + this.rechargeAmount };
+      this.clientService.updateClient(card._id, updatedData).subscribe(
+        (response) => {
+          card.solde = (card.solde || 0) + this.rechargeAmount;
+          this.closeModal('rechargeModal');
+        },
+        (error) => {
+          console.error("Erreur lors du rechargement de la carte", error);
+        }
+      );
     }
   }
-
-  toggleBlockCard(card: Carte) {
-    card.status = card.status === 'Active' ? 'Inactive' : 'Active';
-    console.log('Changement de statut de la carte:', card);
+  // Blocage/Déblocage d'une carte
+  toggleBlockCard(card: Client) {
+    const newStatus = card.status === 'active' ? 'inactive' : 'active';
+    if (card._id) {
+      this.clientService.updateClient(card._id, { status: newStatus }).subscribe(
+        (response) => {
+          card.status = newStatus;
+          console.log("Statut mis à jour", response);
+        },
+        (error) => {
+          console.error("Erreur lors de la mise à jour du statut", error);
+        }
+      );
+    }
   }
-
+  // Réinitialisation de la recherche
   resetSearch() {
     this.searchTerm = '';
     this.filteredCartes = [...this.cartes];
   }
-
-  openModal(modalId: string, card?: Carte) {
+  // Gestion des modales
+  openModal(modalId: string, card?: Client) {
     const modal = document.getElementById(modalId);
     if (modal) {
       modal.style.display = 'block';
@@ -127,7 +176,6 @@ throw new Error('Method not implemented.');
       this.selectedCard = { ...card };
     }
   }
-
   closeModal(modalId: string) {
     const modal = document.getElementById(modalId);
     if (modal) {
@@ -135,16 +183,27 @@ throw new Error('Method not implemented.');
     }
     this.selectedCard = null;
   }
-
-  private createEmptyCard(): Carte {
+  // Création d'un client vide pour le formulaire d'ajout
+  private createEmptyClient(): Client {
     return {
+      _id: '',
       codeCarte: '',
       prenom: '',
       nom: '',
+      telephone: '',
+      email: '',
       role: '',
-      status: 'Inactive',
+      carburant: '',
+      status: 'inactive',
       solde: 0,
       selected: false
     };
+  }
+
+  // Méthode pour la confirmation de suppression (si nécessaire)
+  confirmDeleteCard() {
+    if (this.selectedCard) {
+      this.deleteCard(this.selectedCard);
+    }
   }
 }

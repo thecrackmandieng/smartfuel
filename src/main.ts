@@ -7,6 +7,7 @@ import localeFr from '@angular/common/locales/fr';
 import { provideAnimationsAsync } from '@angular/platform-browser/animations/async';
 import { registerLocaleData } from '@angular/common';
 
+
 // Enregistrer la locale française
 registerLocaleData(localeFr, 'fr');
 

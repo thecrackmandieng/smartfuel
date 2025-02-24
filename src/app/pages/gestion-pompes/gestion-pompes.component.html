@@ -45,6 +45,7 @@
                        [checked]="allSelected"
                        (change)="toggleAllSelection()"/>
               </th>
+              <th>Numero de serie</th>
               <th>Type de Pompe</th>
               <th>Prix Unitaire (L)</th>
               <th>Status</th>
@@ -56,7 +57,8 @@
               <td>
                 <input type="checkbox" [(ngModel)]="pompe.selected" (change)="checkSelection()"/>
               </td>
-              <td>{{ pompe.type }}</td>
+              <td>{{ pompe.numeroSerie }}</td>
+              <td>{{ pompe.typeCarburant }}</td>
               <td>{{ pompe.prix }} FCFA</td>
               <td>
                 <span [class]="'status ' + (pompe.status === 'Active' ? 'status-active' : 'status-inactive')">
@@ -93,12 +95,11 @@
       <span class="close" (click)="closeModal('addModal')">&times;</span>
       <h2><i class="fas fa-gas-pump"></i> Ajouter une Pompe</h2>
       <label>Type de Pompe :</label>
-      <select [(ngModel)]="newPump.type">
+      <select [(ngModel)]="newPump.typeCarburant">
           <option value="" disabled selected>Sélectionnez un type</option>
-          <option value="Type1">Diesel</option>
-          <option value="Type2">Gazol</option>
-          <option value="Type3">GPL</option>
-          <!-- Ajoutez d'autres options selon vos besoins -->
+          <option value="diesel">diesel</option>
+          <option value="gazoil">gazoil</option>
+          <option value="gpl">gpl</option>
       </select>
       <label>Prix Unitaire (L) :</label>
       <input type="number" [(ngModel)]="newPump.prix">
@@ -111,7 +112,7 @@
       <span class="close" (click)="closeModal('editModal')">&times;</span>
       <h2><i class="fas fa-gas-pump"></i> Modifier la Pompe</h2>
       <label>Type de Pompe :</label>
-      <input *ngIf="selectedPump" type="text" [(ngModel)]="selectedPump.type">
+      <input *ngIf="selectedPump" type="text" [(ngModel)]="selectedPump.typeCarburant">
       <label>Prix Unitaire (L) :</label>
       <input *ngIf="selectedPump" type="number" [(ngModel)]="selectedPump.prix">
       <button *ngIf="selectedPump" (click)="editPump(selectedPump)">Modifier</button>
@@ -122,9 +123,8 @@
   <div class="modal-content">
       <span class="close" (click)="closeModal('viewModal')">&times;</span>
       <h2><i class="fas fa-gas-pump"></i> Détails de la Pompe</h2>
-      <p><strong>Type :</strong> {{ selectedPump?.type }}</p>
-      <p><strong>Prix :</strong> {{ selectedPump?.prix }} FCFA</p>
-      <p><strong>Status :</strong> {{ selectedPump?.status }}</p>
+      <p><strong>Type :</strong> {{ selectedPump?.typeCarburant }}</p>
+      <p><strong>Prix Unitaire :</strong> {{ selectedPump?.prix }} FCFA</p>
   </div>
 </div>
 
@@ -135,5 +135,12 @@
       <p>Êtes-vous sûr de vouloir supprimer cette pompe ?</p>
       <button (click)="confirmDeletePump()">Oui</button>
       <button (click)="closeModal('deleteModal')">Non</button>
+  </div>
+</div>
+<div id="successModal" class="modal">
+  <div class="modal-content">
+      <span class="close" (click)="closeModal('successModal')">&times;</span>
+      <h2><i class="fas fa-check-circle"></i> Succès</h2>
+      <p>La pompe a été ajoutée avec succès !</p>
   </div>
 </div>
