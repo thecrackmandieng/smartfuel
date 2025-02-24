@@ -1,36 +1,41 @@
-import { Component } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
+import { PompeService, Pompe } from '../../services/pompe.service';
 import { SidebarComponent } from '../../sidebar/sidebar.component';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 
-interface Pompe {
-  type: string;
-  prix: number;
-  status: string;
-  selected?: boolean;
-}
-
 @Component({
   selector: 'app-gestion-pompes',
   standalone: true,
-  imports: [SidebarComponent, CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule, SidebarComponent],
   templateUrl: './gestion-pompes.component.html',
   styleUrls: ['./gestion-pompes.component.css']
 })
-export class GestionPompesComponent {
-confirmDeletePump() {
-throw new Error('Method not implemented.');
-}
+export class GestionPompesComponent implements OnInit {
   searchTerm: string = '';
   allSelected: boolean = false;
   hasSelection: boolean = false;
-  filteredPompes: Pompe[] = [
-    { type: 'Diesel', prix: 1000, status: 'Active', selected: false },
-    { type: 'Gazol', prix: 900, status: 'Inactive', selected: false }
-  ];
-  pompes: Pompe[] = [...this.filteredPompes];
+  pompes: Pompe[] = [];
+  filteredPompes: Pompe[] = [];
   newPump: Pompe = this.createEmptyPump();
   selectedPump: Pompe | null = null;
+  showSuccessModal: boolean = false;
+
+  constructor(private pompeService: PompeService) {}
+
+  ngOnInit(): void {
+    this.loadPompes();
+  }
+
+  loadPompes() {
+    this.pompeService.getPompes().subscribe({
+      next: (data: Pompe[]) => {
+        this.pompes = data;
+        this.filteredPompes = data;
+      },
+      error: (err) => console.error('Erreur lors du chargement des pompes', err)
+    });
+  }
 
   onSearch() {
     if (!this.searchTerm.trim()) {
@@ -38,8 +43,8 @@ throw new Error('Method not implemented.');
       return;
     }
     const searchLower = this.searchTerm.toLowerCase();
-    this.filteredPompes = this.pompes.filter(pompe => 
-      pompe.type.toLowerCase().includes(searchLower)
+    this.filteredPompes = this.pompes.filter(pompe =>
+      pompe.typeCarburant.toLowerCase().includes(searchLower)
     );
   }
 
@@ -54,44 +59,48 @@ throw new Error('Method not implemented.');
   }
 
   addPump() {
-    this.pompes.unshift(this.newPump);
-    this.filteredPompes = [...this.pompes];
-    this.newPump = this.createEmptyPump();
-    this.closeModal('addModal');
+    this.pompeService.addPompe(this.newPump).subscribe({
+      next: (response) => {
+        const createdPompe = response.pompe;
+        this.pompes.unshift(createdPompe);
+        this.filteredPompes = [...this.pompes];
+        this.newPump = this.createEmptyPump();
+        this.closeModal('addModal');
+        this.showSuccess();
+      },
+      error: (err) => console.error('Erreur lors de l\'ajout de la pompe', err)
+    });
   }
 
   editPump(pompe: Pompe) {
-    console.log('Modification de la pompe:', pompe);
-    this.closeModal('editModal');
+    this.pompeService.updatePompe(pompe).subscribe({
+      next: () => {
+        this.closeModal('editModal');
+        this.loadPompes();
+      },
+      error: (err) => console.error('Erreur lors de la modification de la pompe', err)
+    });
   }
 
-  viewPump(pompe: Pompe) {
-    console.log('Affichage des détails de la pompe:', pompe);
-  }
-
-  deletePump(pompe: Pompe) {
-    const index = this.pompes.indexOf(pompe);
-    if (index > -1) {
-      this.pompes.splice(index, 1);
-      this.filteredPompes = [...this.pompes];
+  deletePump(pompe: Pompe | null) {
+    if (pompe && pompe._id) {
+      this.pompeService.deletePompe(pompe._id).subscribe({
+        next: () => {
+          this.pompes = this.pompes.filter(p => p._id !== pompe._id);
+          this.filteredPompes = [...this.pompes];
+          this.closeModal('deleteModal');
+        },
+        error: (err) => console.error('Erreur lors de la suppression de la pompe', err)
+      });
     }
-    this.closeModal('deleteModal');
-  }
-
-  deleteSelected() {
-    this.pompes = this.pompes.filter(pompe => !pompe.selected);
-    this.filteredPompes = [...this.pompes];
-    this.checkSelection();
   }
 
   toggleBlockPump(pompe: Pompe) {
     pompe.status = pompe.status === 'Active' ? 'Inactive' : 'Active';
-    console.log('Changement de statut de la pompe:', pompe);
-  }
-
-  resetSearch() {
-    this.searchTerm = '';
-    this.filteredPompes = [...this.pompes];
+    this.pompeService.updatePompe(pompe).subscribe({
+      next: () => console.log('Statut modifié', pompe),
+      error: (err) => console.error('Erreur lors du changement de statut', err)
+    });
   }
 
   openModal(modalId: string, pompe?: Pompe) {
@@ -112,12 +121,40 @@ throw new Error('Method not implemented.');
     this.selectedPump = null;
   }
 
+  showSuccess() {
+    this.showSuccessModal = true;
+    setTimeout(() => this.showSuccessModal = false, 3000);
+  }
+  deleteSelected() {
+    const selectedIds = this.pompes
+       .filter(p => p.selected && p._id)
+       .map(p => p._id!);
+ 
+    if (selectedIds.length > 0) {
+       this.pompeService.deletePompes(selectedIds).subscribe({
+          next: () => {
+             this.pompes = this.pompes.filter(p => !selectedIds.includes(p._id!));
+             this.filteredPompes = [...this.pompes];
+             this.checkSelection();
+          },
+          error: (err) => console.error('Erreur lors de la suppression multiple', err)
+       });
+    }
+ }
+ 
+ confirmDeletePump() {
+    if (this.selectedPump) {
+       this.deletePump(this.selectedPump);
+    }
+ }
+ 
   private createEmptyPump(): Pompe {
     return {
       type: '',
       prix: 0,
       status: 'Inactive',
-      selected: false
+      selected: false,
+      typeCarburant: ''
     };
   }
 }

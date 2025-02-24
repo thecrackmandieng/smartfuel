@@ -44,6 +44,7 @@
               </th>
               <th>Code Carte</th>
               <th>Prénom et Nom</th>
+              <th>Telephone</th>
               <th>Rôle</th>
               <th>Status</th>
               <th>Actions</th>
@@ -57,30 +58,31 @@
               </td>
               <td>{{card.codeCarte}}</td>
               <td>{{card.prenom}} {{card.nom}}</td>
+              <td>{{card.telephone}}</td>
               <td>{{card.role}}</td>
               <td>
-                <span [class]="'status ' + (card.status === 'Active' ? 'status-active' : 'status-inactive')">
+                <span [class]="'status ' + (card.status === 'active' ? 'status-active' : 'status-inactive')">
                   {{card.status}}
                 </span>
               </td>
               <td>
                 <div class="actions">
-                  <button class="btn-action edit" [disabled]="card.status !== 'Active'" (click)="openModal('editModal', card)">
+                  <button class="btn-action edit" [disabled]="card.status !== 'active'" (click)="openModal('editModal', card)">
                     <i class="fas fa-edit"></i>
                   </button>
-                  <button class="btn-action view" [disabled]="card.status !== 'Active'" (click)="openModal('viewModal', card)">
+                  <button class="btn-action view" [disabled]="card.status !== 'active'" (click)="openModal('viewModal', card)">
                     <i class="fas fa-eye"></i>
                   </button>
-                  <button class="btn-action delete" [disabled]="card.status !== 'Active'" (click)="openModal('deleteModal', card)">
+                  <button class="btn-action delete" [disabled]="card.status !== 'active'" (click)="openModal('deleteModal', card)">
                     <i class="fas fa-trash"></i>
                   </button>
                   <button class="btn-action block" (click)="toggleBlockCard(card)">
-                    <i class="fas" [ngClass]="card.status === 'Active' ? 'fa-unlock' : 'fa-lock'"></i>
+                    <i class="fas" [ngClass]="card.status === 'active' ? 'fa-unlock' : 'fa-lock'"></i>
                   </button>
                 </div>
               </td>
               <td>
-                <button class="btn-recharge" [disabled]="card.status !== 'Active'" (click)="openModal('rechargeModal', card)">
+                <button class="btn-recharge" [disabled]="card.status !== 'active'" (click)="openModal('rechargeModal', card)">
                   <i class="fas fa-wallet"></i>Recharger
                 </button>
               </td>

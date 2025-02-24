@@ -12,7 +12,7 @@ export class PompisteDashboardComponent implements OnInit {
   private dieselPricePerLiter = 1000;
   private gazoilPricePerLiter = 900;
   private selectedFuelType: string | null = null;
-  private soldeCompte = 10000000; // Solde initial du compte
+  private soldeCompte = 100000; // Solde initial du compte
   public errorMessage: string = '';
   private decrementInterval: any;
 

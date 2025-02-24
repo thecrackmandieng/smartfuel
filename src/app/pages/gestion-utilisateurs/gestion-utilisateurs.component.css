@@ -405,3 +405,58 @@ color: #d1d5db;}
   font-size: 0.875em; /* Taille de police légèrement plus petite */
   margin-top: 5px; /* Espacement au-dessus du message d'erreur */
 }
+
+@keyframes fadeIn {
+  0% {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Responsive */
+@media (max-width: 1024px) {
+  .sidebar {
+      width: 200px;
+  }
+}
+
+@media (max-width: 768px) {
+  .container {
+      flex-direction: column;
+  }
+
+  .sidebar {
+      width: 100%;
+      height: auto;
+  }
+
+  .header {
+      flex-direction: column;
+      gap: 16px;
+  }
+
+  .search-section {
+      flex-direction: column;
+      gap: 16px;
+  }
+
+  .search-container {
+      max-width: none;
+  }
+
+  th:nth-child(4),
+  td:nth-child(4),
+  th:nth-child(5),
+  td:nth-child(5) {
+      display: none;
+  }
+
+  .card-container {
+    grid-template-columns: 1fr; /* Afficher une seule colonne de cartes sur les petits écrans */
+    gap: 15px;
+  }
+}

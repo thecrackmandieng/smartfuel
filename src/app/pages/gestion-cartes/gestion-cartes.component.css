@@ -330,3 +330,27 @@ th, td {
         gap: 16px;
     }
 }
+ 
+@media screen and (max-width: 768px) {
+  .header {
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+  }
+  .header-buttons {
+    margin-top: 10px;
+  }
+  .table-responsive table {
+    min-width: 100%;
+  }
+}
+
+@media screen and (max-width: 480px) {
+  .actions button {
+    font-size: 12px;
+    padding: 5px;
+  }
+  .btn-recharge {
+    font-size: 12px;
+  }
+}
