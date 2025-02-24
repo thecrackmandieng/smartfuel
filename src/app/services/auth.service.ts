@@ -23,7 +23,6 @@ export class AuthService {
   }
 
   // Méthode pour l'authentification
-  // Méthode pour l'authentification
 authenticate(credentials: { codeSecret: string }): Observable<any> {
   return this.http.post<any>(this.getLoginUrl(), credentials, { withCredentials: true }).pipe(
     tap(response => {

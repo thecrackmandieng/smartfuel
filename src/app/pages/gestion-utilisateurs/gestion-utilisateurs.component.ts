@@ -20,7 +20,7 @@ interface Utilisateur {
   isProcessing?: boolean; // Ajout de cette propriété pour gérer l'état du bouton
   carburant?: string; // Ajouter cette ligne
   litresAchetes?: number; // Ajouter cette ligne
-  montantRecharge?: number; // 👈 Ajout de cette propriété
+  montantDu?: number; // ajouter cette ligne
 }
 
 interface Errors {
@@ -142,9 +142,22 @@ export class GestionUtilisateursComponent implements OnInit {
       return; // Stopper l'exécution si le formulaire est invalide
     }
   
-    // Ajouter le champ carburant si le rôle est 'client'
+    // Assurez-vous que les champs requis sont définis
+    this.newUser.nom = this.newUser.nom.trim();
+    this.newUser.prenom = this.newUser.prenom.trim();
+    this.newUser.email = this.newUser.email.trim().toLowerCase();
+    this.newUser.telephone = this.newUser.telephone.trim();
+  
+    // Ajouter le champ carburant et montantDû si le rôle est 'client'
     if (this.newUser.role === 'client') {
-      this.newUser.carburant = this.newUser.carburant || ''; // Valeur par défaut si non spécifiée
+      if (!this.newUser.carburant) {
+        this.errors['carburant'] = "Le champ 'carburant' est requis pour les clients.";
+        return;
+      }
+      if (this.newUser.montantDu === undefined || this.newUser.montantDu < 0) {
+        this.errors['montantDu'] = "Le champ 'montant dû' doit être positif pour les clients.";
+        return;
+      }
     }
   
     this.crudService.addUser(this.newUser).subscribe(
@@ -155,25 +168,13 @@ export class GestionUtilisateursComponent implements OnInit {
         this.errors = {}; // Réinitialiser les erreurs après un succès
         this.closeModal('addModal');
         this.cdr.detectChanges(); // Forcer la détection des changements
-  
-        // 🚀 Si l'utilisateur est un client, on recharge automatiquement sa carte
-        if (user.role === 'client' && this.newUser.montantRecharge) {
-          this.crudService.rechargeCarte(user._id, { montant: this.newUser.montantRecharge }).subscribe(
-            (response) => {
-              console.log(`Carte rechargée avec ${this.newUser.montantRecharge} pour ${user.nom}`, response);
-            },
-            (error) => {
-              console.error("Erreur lors de la recharge de la carte", error);
-            }
-          );
-        }
       },
       (error: any) => {
         console.error("Erreur lors de l'ajout de l'utilisateur", error);
+        this.errors['apiError'] = "Erreur lors de l'ajout de l'utilisateur. Veuillez réessayer."; // Gestion des erreurs
       }
     );
   }
-  
   
 
 

@@ -78,42 +78,46 @@ export class LoginComponent implements AfterViewInit {
 
   onSubmit(): void {
     const code = this.credentials.code1 + this.credentials.code2 + this.credentials.code3 + this.credentials.code4;
-  
+
     console.log('Code envoyé:', code);  // Vérification
-  
+
     if (code) {
-      this.authService.authenticate({ codeSecret: code }).subscribe(
-        (response) => {
-          console.log('Réponse API:', response);  // Vérification de la réponse
-          
-          if (response.msg === 'Connexion réussie') {
-            // Vérifiez le rôle dans la réponse
-            const role = response.role; // Assurez-vous que la réponse inclut le rôle
-            if (role === "admin") {
-              setTimeout(() => {
-              this.router.navigate(['/admin/dashboard']); // Redirection vers la page admin/dashboard
-            }, 100)} 
-            else {
-              // Gérer d'autres rôles si nécessaire
-              this.errorMessage = 'Accès non autorisé pour ce rôle';
+        this.authService.authenticate({ codeSecret: code }).subscribe(
+            (response) => {
+                console.log('Réponse API:', response);  // Vérification de la réponse
+
+                if (response.msg === 'Connexion réussie') {
+                    // Vérifiez le rôle dans la réponse
+                    const role = response.role; // Assurez-vous que la réponse inclut le rôle
+                    if (role === "admin") {
+                        setTimeout(() => {
+                            this.router.navigate(['/admin/dashboard']); // Redirection vers la page admin/dashboard
+                        }, 100);
+                    } else if (role === "pompiste") {
+                      console.log('Redirection vers /admin/pompiste'); // Vérification
+                        setTimeout(() => {
+                            this.router.navigate(['pompiste/dashboard']); // Redirection vers la page admin/pompiste
+                        }, 100);
+                    } else {
+                        // Gérer d'autres rôles si nécessaire
+                        this.errorMessage = 'Accès non autorisé pour ce rôle';
+                    }
+                } else {
+                    this.handleIncorrectAttempt();
+                    this.errorMessage = 'Code incorrect';
+                }
+            },
+            (error) => {
+                console.error('Erreur API:', error);
+                this.handleIncorrectAttempt();
+                this.errorMessage = 'Erreur de connexion';
             }
-          } else {
-            this.handleIncorrectAttempt();
-            this.errorMessage = 'Code incorrect';
-          }
-        },
-        (error) => {
-          console.error('Erreur API:', error);
-          this.handleIncorrectAttempt();
-          this.errorMessage = 'Erreur de connexion';
-        }
-      );
+        );
     } else {
-      this.clearInputs();
-      this.errorMessage = 'Veuillez entrer un code';
+        this.clearInputs();
+        this.errorMessage = 'Veuillez entrer un code';
     }
-  }
-  
+}
 
 
   handleIncorrectAttempt(): void {

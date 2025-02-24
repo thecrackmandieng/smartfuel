@@ -1,11 +1,13 @@
 import { Component, OnInit, Renderer2, ElementRef } from '@angular/core';
+import { AuthService } from '../../services/auth.service';
+import { Router } from '@angular/router';
 
 @Component({
   selector: 'app-pompiste-dashboard',
   standalone: true,
   templateUrl: './dashboard.component.html',
   styleUrls: ['./dashboard.component.css'],
-  imports: []
+  providers: [AuthService, Router]
 })
 export class PompisteDashboardComponent implements OnInit {
   // Définition des prix des carburants
@@ -16,7 +18,7 @@ export class PompisteDashboardComponent implements OnInit {
   public errorMessage: string = '';
   private decrementInterval: any;
 
-  constructor(private renderer: Renderer2, private el: ElementRef) {}
+  constructor(private renderer: Renderer2, private el: ElementRef,  private authService: AuthService,  private router: Router) {}
 
   ngOnInit(): void {
     // Récupération des éléments HTML
@@ -88,6 +90,28 @@ export class PompisteDashboardComponent implements OnInit {
         this.resetForm(amountInput, volumeInput, inputFields, dieselBtn, gazoilBtn);
       });
     }
+
+    const logoutBtn = this.el.nativeElement.querySelector('#logout-btn');
+    if (logoutBtn) {
+      this.renderer.listen(logoutBtn, 'click', () => {
+        this.logout();
+      });
+    }
+  }
+
+   // Méthode de déconnexion
+   logout(): void {
+    this.authService.logout().subscribe(
+      (response) => {
+        console.log('Déconnexion réussie:', response);
+        // Redirigez l'utilisateur vers la page de connexion ou une autre page
+        this.router.navigate(['/']);
+      },
+      (error) => {
+        console.error('Erreur lors de la déconnexion:', error);
+        this.errorMessage = 'Erreur lors de la déconnexion. Veuillez réessayer.';
+      }
+    );
   }
 
   // Fonction pour gérer la sélection du type de carburant
