@@ -45,8 +45,10 @@ export class PompeService {
 
   // Supprimer plusieurs pompes
   deletePompes(pompeIds: string[]): Observable<any> {
-    return this.http.delete(`${this.apiUrl}/delete-multiple`, { body: { pompeIds } });
+    const idsParam = pompeIds.join(','); // Convertir le tableau en string séparée par des virgules
+    return this.http.delete(`${this.apiUrl}/delete-multiple?ids=${idsParam}`);
   }
+  
 
   // Bloquer une pompe
 bloquerPompe(pompeId: string): Observable<any> {

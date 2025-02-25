@@ -20,13 +20,13 @@ export interface Client {
   providedIn: 'root'
 })
 export class ClientService {
-  private apiUrl = 'http://localhost:5000/api/clients'; // Correction de l’URL
+  private apiUrl = 'http://localhost:5000/api'; // Correction de l’URL
 
   constructor(private http: HttpClient) {}
 
   // Récupérer tous les clients
   getClients(): Observable<Client[]> {
-    return this.http.get<Client[]>(this.apiUrl);
+    return this.http.get<Client[]>(`${this.apiUrl}/clients`);
   }
 
   // Ajouter un nouveau client

@@ -127,20 +127,25 @@ export class GestionPompesComponent implements OnInit {
   }
   deleteSelected() {
     const selectedIds = this.pompes
-       .filter(p => p.selected && p._id)
-       .map(p => p._id!);
- 
+        .filter(p => p.selected && p._id)  // Vérifie que p.selected est bien défini
+        .map(p => p._id!);
+
+    console.log("Suppression des pompes avec les IDs :", selectedIds);  // Utiliser selectedIds
+
     if (selectedIds.length > 0) {
-       this.pompeService.deletePompes(selectedIds).subscribe({
-          next: () => {
-             this.pompes = this.pompes.filter(p => !selectedIds.includes(p._id!));
-             this.filteredPompes = [...this.pompes];
-             this.checkSelection();
-          },
-          error: (err) => console.error('Erreur lors de la suppression multiple', err)
-       });
+        this.pompeService.deletePompes(selectedIds).subscribe({
+            next: () => {
+                this.pompes = this.pompes.filter(p => !selectedIds.includes(p._id!));
+                this.filteredPompes = [...this.pompes];
+                this.checkSelection();
+            },
+            error: (err) => console.error('Erreur lors de la suppression multiple', err)
+        });
+    } else {
+        console.warn("Aucune pompe sélectionnée pour suppression.");
     }
- }
+}
+
  
  confirmDeletePump() {
     if (this.selectedPump) {
