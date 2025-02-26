@@ -164,7 +164,7 @@
         <select [(ngModel)]="newUser.carburant" name="carburant" class="select-field" required>
           <option value="" disabled selected>Sélectionnez un carburant</option>
           <option value="essence">Essence</option>
-          <option value="petrole">Pétrole</option>
+          <option value="diesel">Diesel</option>
           <option value="gazoile">Gazoile</option>
         </select>
         <div *ngIf="errors['carburant']" class="error">{{ errors['carburant'] }}</div>

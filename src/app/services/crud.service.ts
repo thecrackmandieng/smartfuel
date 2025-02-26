@@ -51,6 +51,4 @@ deleteMultipleUsers(userIds: string[]): Observable<any> {
   return this.http.delete(`${this.baseUrl}/delete-multiple`, { body: { ids: userIds } });
 }
 
-
-
 }
