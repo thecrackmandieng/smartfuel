@@ -94,23 +94,91 @@
   margin-top: 5px; /* Ajustez la marge inférieure selon vos besoins */
   font-size: 35px;
 }
-/* Media queries pour les petits écrans */
-@media (max-width: 600px) {
+/* 🎯 Responsive pour tablettes et mobiles */
+@media (max-width: 768px) {
+  .login-container {
+    padding: 0 10px;  /* Réduire le padding pour s’adapter à l'écran */
+  }
+
   .login-content {
-    padding: 10px; /* Réduisez le padding pour les petits écrans */
+    max-width: 90vw;
+    padding: 20px;  /* Réduire un peu le padding */
+    height: auto;  /* Permet de s’adapter au contenu */
+  }
+
+  .form-group {
+    margin-left: 0; /* Annuler la marge gauche pour centrer */
+    margin-bottom: 20px; /* Espacement entre les champs */
   }
 
   .code-inputs-wrapper {
-    padding: 10px; /* Réduisez le padding pour les petits écrans */
+    max-width: 240px;
+    padding: 10px;  /* Un peu moins de padding pour un meilleur ajustement */
+    transform: translateX(0); /* Réinitialiser le décalage horizontal */
   }
 
   .code-input {
-    font-size: 1.2em; /* Réduisez la taille de la police pour les petits écrans */
-    width: 40px; /* Réduisez la largeur pour les petits écrans */
+    font-size: 18px;
+    width: 45px;
+  }
+
+  .connect-with, .error-message {
+    margin-left: 0;
+    font-size: 18px; /* Taille de texte réduite pour les petits écrans */
   }
 
   .code-label {
-    font-size: 1.5em; /* Réduisez la taille de la police pour les petits écrans */
+    font-size: 28px; /* Réduire la taille du titre */
+  }
+
+  .progress-bar {
+    height: 8px;  /* Réduire la hauteur de la barre de progression */
+  }
+
+  .progress {
+    height: 8px;
+  }
+}
+
+@media (max-width: 480px) {
+  .login-container {
+    padding: 0 5px; /* Réduire encore les marges */
+  }
+
+  .login-content {
+    max-width: 95vw;
+    padding: 10px;
+  }
+
+  .form-group {
+    margin-left: 0; /* Centrer les champs */
+  }
+
+  .code-inputs-wrapper {
+    max-width: 200px;
+    padding: 8px;
+    transform: translateX(0); /* Réinitialiser le décalage horizontal */
+  }
+
+  .code-input {
+    font-size: 16px; /* Réduire encore plus la taille de la police */
+    width: 35px; /* Réduire la taille des champs */
+  }
+
+  .connect-with, .error-message {
+    font-size: 16px;
+  }
+
+  .code-label {
+    font-size: 24px; /* Réduire la taille du texte pour le titre */
+  }
+
+  .progress-bar {
+    height: 6px; /* Réduire la hauteur de la barre de progression */
+  }
+
+  .progress {
+    height: 6px;
   }
 }
 

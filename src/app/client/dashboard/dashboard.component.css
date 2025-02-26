@@ -1,9 +1,308 @@
-.dashboard-container {
+/* dashboard.component.css */
+
+/* Global styles */
+body, html {
+  margin: 0;
+  padding: 0;
+  font-family: Arial, sans-serif;
+  height: 100%;
+}
+
+.overlay-card {
+  width: 75%; /* Adjust the width as needed */
+  margin: 0 auto; /* Center the card horizontally */
+  border-radius: 20px; /* Adjust the border radius as needed */
+  overflow: hidden; /* Ensure content does not overflow the card */
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); /* Add shadow for card effect */
+  margin-top: 20px; /* Adjust the top margin as needed */
+}
+
+.overlay {
+  background: url('../../../assets/pompistbg.png') center/cover no-repeat; /* Use 'cover' to fill the card */
+  height: 90vh; /* Adjust this height as needed */
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  border-radius: 25px; /* Adjust the border radius as needed */
+  overflow: hidden; /* Ensure content does not overflow the card */
+}
+
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  width: 90%;
+  position: absolute;
+  top: 20px;
+  left: 5%;
+}
+
+.logo {
+  height: 50px;
+}
+
+.title {
+  font-size: 2rem;
+  font-weight: bold;
+  color: white;
+}
+
+.power-btn {
+  font-size: 2rem;
+  color: white;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  margin-left: 1220px;
+}
+
+.fuel-options {
+  display: flex;
+  flex-direction: row;
+  justify-content: center;
+  align-items: center;
+  gap: 50px;
+  background-color: rgba(45, 134, 185, 0.3);
+  padding: 100px;
+  border-radius: 20px;
+  backdrop-filter: blur(5px);
+  border-right: 4px solid rgb(255, 255, 255);
+  border-bottom: 4px solid rgb(255, 255, 255);
+}
+
+.fuel-card {
+  text-align: center;
+  cursor: pointer;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  position: relative; /* Add position relative to contain the absolute positioning */
+}
+
+.icon-btn, .select-btn {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.icon-btn {
+  font-size: 8rem; /* Reduce the icon size */
+  background: transparent;
+  border: none;
+  cursor: pointer;
+}
+
+.select-btn {
+  position: absolute; /* Position the button absolutely */
+  top: 0; /* Align to the top */
+  right: 0; /* Align to the left */
+  font-size: 1rem; /* Adjust the size as needed */
+  background-color: rgba(255, 255, 255, 0.8); /* Optional: Add background color */
+  border: 1px solid #ccc; /* Optional: Add border */
+  border-radius: 5px; /* Optional: Add border radius */
+  padding: 5px 10px; /* Optional: Add padding */
+}
+
+.fuel-title {
+  font-size: 12px; /* Adjust the size as needed */
+  margin-top: 5px; /* Space between icon and title */
+}
+
+.red-icon {
+  color: green; /* Change color to red */
+}
+
+.green-icon {
+  color: brown; /* Change color to green */
+}
+
+.fuel-card h2 {
+  font-size: 2rem; /* Reduce the title size */
+  font-weight: bold;
+  color: white;
+}
+
+.diesel h2 {
+  color: green;
+}
+
+.gazoil h2 {
+  color: brown;
+}
+
+.input-fields {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  margin-top: 5px;
+  width: 100%;
+}
+
+.fuel-card button {
+  transition: opacity 0.3s ease-in-out, transform 0.3s ease-in-out;
+}
+
+button:disabled {
+  opacity: 0.5;
+  pointer-events: none;
+}
+
+button:disabled:hover {
+  transform: scale(1);
+}
+
+.input-fields input {
+  width: 100%;
+  text-align: center;
+  height: 25px;
+  border-radius: 5px;
+  border: 1px solid #ccc;
+  padding: 5px;
+}
+
+.input-fields label {
+  width: 100%;
+  text-align: center;
+  height: 25px;
+  padding: 5px;
+  font-size: 1.5rem;
+}
+
+.error-message {
+  color: red; /* Error text color */
+  font-size: 1.2rem; /* Error text size */
+  margin-top: 5px; /* Spacing above the error message */
+  visibility: hidden; /* Error message is hidden by default */
+}
+
+.error-message.show {
+  visibility: visible; /* Show the error message */
+}
+
+/* Button styles */
+.button-group {
+  display: flex;
+  justify-content: space-between;
+  width: 100%;
+  margin-top: 20px;
+}
+
+button {
+  padding: 10px 20px;
+  font-size: 1rem;
+  border: none;
+  cursor: pointer;
+  border-radius: 5px;
+}
+
+.cancel-btn {
+  background-color: #f44336; /* Red for Cancel */
+  color: white;
+}
+
+.validate-btn {
+  background-color: #4caf50; /* Green for Validate */
+  color: white;
+}
+
+button:hover {
+  opacity: 0.9;
+}
+
+/* Media queries for responsiveness */
+@media (max-width: 1024px) {
+  .overlay-card {
+    width: 85%; /* Adjust width for tablets */
+  }
+
+  .fuel-options {
+    padding: 50px;
+    gap: 30px;
+  }
+
+  .fuel-card {
+    flex: 1 1 45%;
+  }
+
+  .input-fields {
+    width: 80%; /* Adjust input field size */
+  }
+
+  .button-group {
+    flex-direction: column;
+    gap: 15px;
+  }
+
+  .cancel-btn, .validate-btn {
+    width: 100%;
+  }
+}
+
+@media (max-width: 768px) {
+  .overlay-card {
+    width: 90%; /* Adjust width for smaller screens */
+  }
+
+  .fuel-options {
+    flex-direction: column;
+    padding: 40px;
+    gap: 20px;
+  }
+
+  .fuel-card {
+    flex: 1 1 80%;
+  }
+
+  .button-group {
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  .cancel-btn, .validate-btn {
+    width: 100%;
+  }
+
+  .input-fields {
+    width: 100%;
+  }
+}
+
+@media (max-width: 480px) {
+  .fuel-options {
     padding: 20px;
-    background-color: #f4f4f4;
+    gap: 15px;
   }
-  
-  .dashboard-container h2 {
-    color: #333;
+
+  .fuel-card {
+    flex: 1 1 100%;
   }
-  
+
+  .icon-btn {
+    font-size: 5rem; /* Reduce icon size on mobile */
+  }
+
+  .fuel-card h2 {
+    font-size: 2rem; /* Reduce title size on mobile */
+  }
+
+  .input-fields input {
+    font-size: 1.2rem; /* Reduce input field size */
+  }
+
+  .error-message {
+    font-size: 1rem;
+  }
+
+  .button-group {
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  .cancel-btn, .validate-btn {
+    width: 100%;
+  }
+}

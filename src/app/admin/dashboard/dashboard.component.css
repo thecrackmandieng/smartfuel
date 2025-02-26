@@ -177,3 +177,161 @@
     margin-left: 100px; /* Ajustez la marge gauche pour espacer du bord */
   }
 }
+/* Media queries pour les petits écrans */
+@media (max-width: 768px) {
+  .dashboard-layout {
+    flex-direction: column; /* Placer les éléments en colonne sur les petits écrans */
+  }
+
+  .sidebar {
+    width: 100%; /* Occupe toute la largeur sur les petits écrans */
+    height: auto; /* Ajuste la hauteur en fonction du contenu */
+    margin-bottom: 20px; /* Espacer un peu du contenu principal */
+  }
+
+  .dashboard-container {
+    margin-left: 0; /* Enlever la marge gauche */
+    padding: 10px; /* Réduire le padding pour gagner de l'espace */
+  }
+
+  .layout {
+    flex-direction: column; /* Changer la disposition en colonne */
+  }
+
+  .card {
+    width: 100%; /* Occupe toute la largeur disponible */
+    margin-bottom: 15px; /* Espacement entre les cartes */
+    border-right: none; /* Retirer la bordure droite */
+    border-bottom: none; /* Retirer la bordure inférieure */
+  }
+
+  .flex-container {
+    flex-direction: column; /* Placer les éléments en colonne sur les petits écrans */
+    justify-content: flex-start;
+  }
+
+  .pump-card, .reservoir-card {
+    width: 100%; /* Prendre toute la largeur sur les petits écrans */
+    margin-right: 0; /* Réinitialiser la marge droite */
+    margin-left: 0; /* Réinitialiser la marge gauche */
+    margin-bottom: 15px; /* Ajouter un espacement entre les cartes */
+  }
+
+  .reservoir-card::before {
+    top: 5px; /* Ajuster la position pour les petits écrans */
+    left: 5px;
+    width: 50%; /* Réduire la taille de l'image */
+    height: 60%; /* Réduire la taille de l'image */
+  }
+
+  .reservoir-card h3 {
+    margin-left: 0; /* Réinitialiser la marge gauche */
+    text-align: center; /* Centrer le texte */
+    font-size: 20px; /* Réduire la taille du texte */
+  }
+
+  .reservoir-card .card-content {
+    margin-left: 0; /* Réinitialiser la marge gauche */
+    margin-top: 0; /* Ajuster la marge top */
+    text-align: center; /* Centrer le texte */
+  }
+
+  .pump-card {
+    width: 100%; /* Prendre toute la largeur sur les petits écrans */
+  }
+
+  .chart-card {
+    width: 100%; /* Occuper toute la largeur de l'écran */
+    height: 300px; /* Réduire la hauteur pour les petits écrans */
+    margin-bottom: 10px; /* Réduire l'espacement */
+  }
+
+  .chart {
+    height: 40px; /* Diminuer la hauteur du graphique */
+  }
+
+  .profile-photo-container {
+    width: 40px; /* Réduire la taille de la photo de profil */
+    height: 40px;
+    margin-right: 10px; /* Réduire la marge droite */
+    margin-bottom: 15px; /* Espacement supplémentaire en bas */
+  }
+
+  .icon-large {
+    font-size: 2em; /* Réduire la taille de l'icône */
+  }
+
+  .text-large {
+    font-size: 1.2em; /* Réduire la taille du texte */
+  }
+
+  .fuel-info {
+    margin-left: 0; /* Réinitialiser la marge gauche */
+    text-align: center; /* Centrer le texte */
+  }
+}
+
+@media (max-width: 480px) {
+  .dashboard-layout {
+    flex-direction: column; /* Placer les éléments en colonne sur les plus petits écrans */
+  }
+
+  .sidebar {
+    width: 100%; /* Prendre toute la largeur sur les très petits écrans */
+    height: auto;
+    margin-bottom: 15px;
+  }
+
+  .dashboard-container {
+    padding: 5px; /* Réduire encore le padding */
+    margin-left: 0;
+  }
+
+  .card {
+    width: 100%; /* Prendre toute la largeur */
+    margin-bottom: 10px; /* Réduire l'espace entre les cartes */
+    border-right: none;
+    border-bottom: none;
+  }
+
+  .pump-card, .reservoir-card {
+    width: 100%; /* Prendre toute la largeur sur les très petits écrans */
+    margin-right: 0;
+    margin-left: 0;
+  }
+
+  .reservoir-card::before {
+    top: 5px;
+    left: 5px;
+    width: 40%; /* Réduire la taille de l'image pour les très petits écrans */
+    height: 50%;
+  }
+
+  .reservoir-card h3 {
+    margin-left: 0;
+    font-size: 18px; /* Réduire la taille du texte */
+  }
+
+  .chart-card {
+    height: 250px; /* Réduire la hauteur de la carte graphique */
+  }
+
+  .chart {
+    height: 30px; /* Diminuer encore la hauteur du graphique */
+  }
+
+  .profile-photo-container {
+    width: 30px; /* Réduire encore la taille de la photo de profil */
+    height: 30px;
+    margin-right: 5px; /* Réduire la marge droite */
+    margin-bottom: 10px; /* Réduire la marge du bas */
+  }
+
+  .icon-large {
+    font-size: 1.5em; /* Réduire encore la taille des icônes */
+  }
+
+  .text-large {
+    font-size: 1.1em; /* Réduire encore la taille du texte */
+  }
+}

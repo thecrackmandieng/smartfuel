@@ -2,19 +2,15 @@
   <aside class="sidebar">
     <app-sidebar></app-sidebar>
   </aside>
-  
+
   <main class="main-content">
     <div class="card">
       <!-- Header -->
       <div class="header">
         <h1>Gestion des Cartes</h1>
         <div class="header-buttons">
-          <button class="btn-delete" [disabled]="!hasSelection" (click)="deleteSelected()">
-            <i class="fas fa-trash-alt"></i>Supprimer
-          </button>
-          <button class="btn-add" (click)="openModal('addModal')">
-            <i class="fas fa-plus"></i>Ajouter
-          </button>
+          <button class="btn-delete" (click)="deleteSelectedUsers()">Supprimer sélectionnés</button>
+          <button class="btn-toggle" (click)="blockMultipleUsers()">Bloquer/Débloquer sélectionnés</button>
         </div>
       </div>
 
@@ -22,11 +18,11 @@
       <div class="search-section">
         <div class="search-container">
           <i class="fas fa-search search-icon"></i>
-          <input 
-            type="text" 
+          <input
+            type="text"
             [(ngModel)]="searchTerm"
             (input)="onSearch()"
-            placeholder="Rechercher par Code Carte, Nom, Prenom..." 
+            placeholder="Rechercher par Prénom, Email, Matricule..."
             class="search-input"
           />
         </div>
@@ -38,52 +34,54 @@
           <thead>
             <tr>
               <th>
-                <input type="checkbox" 
+                <input type="checkbox"
                        [checked]="allSelected"
                        (change)="toggleAllSelection()"/>
               </th>
-              <th>Code Carte</th>
+              <th>Matricule</th>
               <th>Prénom et Nom</th>
-              <th>Telephone</th>
+              <th>Email</th>
+              <th>Téléphone</th>
               <th>Rôle</th>
               <th>Status</th>
               <th>Actions</th>
-              <th>Recharger</th>
+              <th>Assignation</th>
             </tr>
           </thead>
           <tbody>
-            <tr *ngFor="let card of filteredCartes">
+            <tr *ngFor="let user of filteredUtilisateurs">
               <td>
-                <input type="checkbox" [(ngModel)]="card.selected"/>
+                <input type="checkbox" [(ngModel)]="user.selected"/>
               </td>
-              <td>{{card.codeCarte}}</td>
-              <td>{{card.prenom}} {{card.nom}}</td>
-              <td>{{card.telephone}}</td>
-              <td>{{card.role}}</td>
+              <td>{{user.matricule}}</td>
+              <td>{{user.prenom}} {{user.nom}}</td>
+              <td>{{user.email}}</td>
+              <td>{{user.telephone}}</td>
+              <td>{{user.role}}</td>
               <td>
-                <span [class]="'status ' + (card.status === 'active' ? 'status-active' : 'status-inactive')">
-                  {{card.status}}
+                <span [class]="'status ' + (user.status === 'actif' ? 'status-active' : 'status-inactive')">
+                  {{user.status}}
                 </span>
               </td>
               <td>
                 <div class="actions">
-                  <button class="btn-action edit" [disabled]="card.status !== 'active'" (click)="openModal('editModal', card)">
+                  <button class="btn-action edit" (click)="openModal('editModal', user)" [disabled]="isUserBlocked(user)">
                     <i class="fas fa-edit"></i>
                   </button>
-                  <button class="btn-action view" [disabled]="card.status !== 'active'" (click)="openModal('viewModal', card)">
+                  <button class="btn-action view" (click)="openModal('viewModal', user)" [disabled]="isUserBlocked(user)">
                     <i class="fas fa-eye"></i>
                   </button>
-                  <button class="btn-action delete" [disabled]="card.status !== 'active'" (click)="openModal('deleteModal', card)">
+                  <button class="btn-action delete" (click)="openModal('deleteModal', user)" [disabled]="isUserBlocked(user)">
                     <i class="fas fa-trash"></i>
                   </button>
-                  <button class="btn-action block" (click)="toggleBlockCard(card)">
-                    <i class="fas" [ngClass]="card.status === 'active' ? 'fa-unlock' : 'fa-lock'"></i>
+                  <button class="btn-action block" (click)="toggleBlockUser(user)" title="Cliquez pour {{ user.status === 'actif' ? 'archiver' : 'désarchiver' }} l'utilisateur">
+                    <i class="fas" [ngClass]="user.status === 'actif' ? 'fa-unlock' : 'fa-lock'"></i>
                   </button>
                 </div>
               </td>
               <td>
-                <button class="btn-recharge" [disabled]="card.status !== 'active'" (click)="openModal('rechargeModal', card)">
-                  <i class="fas fa-wallet"></i>Recharger
+                <button class="btn-recharge" (click)="openModal('rechargeModal', user)" [disabled]="isUserBlocked(user)">
+                  <i class="fas fa-plus-circle"></i> Recharger
                 </button>
               </td>
             </tr>
@@ -94,69 +92,89 @@
   </main>
 </div>
 
-<!-- Modals -->
-<div id="addModal" class="modal">
-  <div class="modal-content">
-      <span class="close" (click)="closeModal('addModal')">&times;</span>
-      <h2><i class="fas fa-plus"></i> Ajouter une Carte</h2>
-      <label>Code Carte :</label>
-      <input type="text" [(ngModel)]="newCard.codeCarte">
-      <label>Prénom :</label>
-      <input type="text" [(ngModel)]="newCard.prenom">
-      <label>Nom :</label>
-      <input type="text" [(ngModel)]="newCard.nom">
-      <label>Rôle :</label>
-      <input type="text" [(ngModel)]="newCard.role">
-      <button (click)="addCard()">Ajouter</button>
-  </div>
-</div>
-
-<div id="editModal" class="modal">
-  <div class="modal-content">
-      <span class="close" (click)="closeModal('editModal')">&times;</span>
-      <h2><i class="fas fa-edit"></i> Modifier la Carte</h2>
-      <label>Code Carte :</label>
-      <input *ngIf="selectedCard" type="text" [(ngModel)]="selectedCard.codeCarte">
-      <label>Prénom :</label>
-      <input *ngIf="selectedCard" type="text" [(ngModel)]="selectedCard.prenom">
-      <label>Nom :</label>
-      <input *ngIf="selectedCard" type="text" [(ngModel)]="selectedCard.nom">
-      <label>Rôle :</label>
-      <input *ngIf="selectedCard" type="text" [(ngModel)]="selectedCard.role">
-      <button *ngIf="selectedCard" (click)="editCard(selectedCard)">Modifier</button>
-  </div>
-</div>
-
 <div id="viewModal" class="modal">
   <div class="modal-content">
-      <span class="close" (click)="closeModal('viewModal')">&times;</span>
-      <h2><i class="fas fa-eye"></i> Détails de la Carte</h2>
-      <p><strong>Prénom :</strong> {{ selectedCard?.prenom }}</p>
-      <p><strong>Nom :</strong> {{ selectedCard?.nom }}</p>
-      <p><strong>Rôle :</strong> {{ selectedCard?.role }}</p>
-      <p><strong>Status :</strong> {{ selectedCard?.status }}</p>
+    <span class="close" (click)="closeModal('viewModal')">&times;</span>
+    <h2><i class="fas fa-user"></i> Détails de l'Utilisateur</h2>
+
+    <p><strong>Matricule :</strong> {{ selectedUser?.matricule }}</p>
+    <p><strong>Nom :</strong> {{ selectedUser?.nom }}</p>
+    <p><strong>Prénom :</strong> {{ selectedUser?.prenom }}</p>
+    <p><strong>Email :</strong> {{ selectedUser?.email }}</p>
+    <p><strong>Téléphone :</strong> {{ selectedUser?.telephone }}</p>
+    <p><strong>Rôle :</strong> {{ selectedUser?.role }}</p>
+
+    <button (click)="closeModal('viewModal')" class="btn btn-close">Fermer</button>
+  </div>
+</div>
+
+<div id="rechargeModal" class="modal">
+  <div class="modal-content">
+    <span class="close" (click)="closeModal('rechargeModal')">&times;</span>
+    <h2><i class="fas fa-plus-circle"></i> Recharger le Compte</h2>
+    <label>Montant à Recharger :</label>
+    <input type="number" [(ngModel)]="rechargeAmount" class="input-field" min="0" required>
+    <button (click)="selectedUser && rechargeUser(selectedUser)" class="btn btn-recharge">Recharger</button>
+    <button (click)="closeModal('rechargeModal')" class="btn btn-cancel">Annuler</button>
+  </div>
+</div>
+
+<!-- MODAL D'ÉDITION DE L'UTILISATEUR -->
+<div id="editModal" class="modal">
+  <div class="modal-content">
+    <span class="close" (click)="closeModal('editModal')">&times;</span>
+    <h2><i class="fas fa-user-edit"></i> Modifier l'Utilisateur</h2>
+
+    <input *ngIf="selectedUser" type="text" [(ngModel)]="selectedUser.matricule" disabled class="input-field">
+
+    <label>Prénom :</label>
+    <input *ngIf="selectedUser" type="text" [(ngModel)]="selectedUser.prenom" class="input-field">
+    <div *ngIf="errors['prenom']" class="error">{{ errors['prenom'] }}</div>
+
+    <label>Nom :</label>
+    <input *ngIf="selectedUser" type="text" [(ngModel)]="selectedUser.nom" class="input-field">
+    <div *ngIf="errors['nom']" class="error">{{ errors['nom'] }}</div>
+
+    <label>Email :</label>
+    <input *ngIf="selectedUser" type="email" [(ngModel)]="selectedUser.email" class="input-field">
+    <div *ngIf="errors['email']" class="error">{{ errors['email'] }}</div>
+
+    <label>Téléphone :</label>
+    <input *ngIf="selectedUser" type="text" [(ngModel)]="selectedUser.telephone" class="input-field">
+    <div *ngIf="errors['telephone']" class="error">{{ errors['telephone'] }}</div>
+    
+    <div *ngIf="errors['role']" class="error">{{ errors['role'] }}</div>
+
+    <button *ngIf="selectedUser" (click)="editUser(selectedUser)" class="btn btn-edit">Modifier</button>
+  </div>
+</div>
+
+<!-- MODAL DE SUCCÈS -->
+<div id="successModal" class="modal">
+  <div class="modal-content success">
+    <span class="close" (click)="closeModal('successModal')">&times;</span>
+    <h2><i class="fas fa-check-circle"></i> Succès</h2>
+    <p>{{ modalMessage }}</p>
+    <button (click)="closeModal('successModal')" class="btn btn-success">OK</button>
+  </div>
+</div>
+
+<!-- MODAL D'ERREUR -->
+<div id="errorModal" class="modal">
+  <div class="modal-content error">
+    <span class="close" (click)="closeModal('errorModal')">&times;</span>
+    <h2><i class="fas fa-exclamation-circle"></i> Erreur</h2>
+    <p>{{ modalMessage }}</p>
+    <button (click)="closeModal('errorModal')" class="btn btn-error">Fermer</button>
   </div>
 </div>
 
 <div id="deleteModal" class="modal">
   <div class="modal-content">
       <span class="close" (click)="closeModal('deleteModal')">&times;</span>
-      <h2><i class="fas fa-trash"></i> Confirmer la Suppression</h2>
-      <p>Êtes-vous sûr de vouloir supprimer cette carte ?</p>
-      <button (click)="confirmDeleteCard()">Oui</button>
+      <h2><i class="fas fa-user-times"></i> Confirmer la Suppression</h2>
+      <p>Êtes-vous sûr de vouloir supprimer cet utilisateur ?</p>
+      <button (click)="confirmDeleteUser()">Oui</button>
       <button (click)="closeModal('deleteModal')">Non</button>
-  </div>
-</div>
-
-<div id="rechargeModal" class="modal">
-  <div class="modal-content">
-      <span class="close" (click)="closeModal('rechargeModal')">&times;</span>
-      <h2><i class="fas fa-wallet"></i> Recharger la Carte</h2>
-      <p><strong> {{ selectedCard?.prenom }} {{ selectedCard?.nom }}</strong></p>
-      <p><strong>Solde Actuel :</strong> {{ selectedCard?.solde }} FCFA</p>
-      <label>Montant à Recharger :</label>
-      <input type="number" [(ngModel)]="rechargeAmount">
-      <button (click)="selectedCard && rechargeCard(selectedCard)">Confirmer</button>
-      <button (click)="closeModal('rechargeModal')">Annuler</button>
   </div>
 </div>

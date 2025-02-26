@@ -30,9 +30,7 @@
             class="search-input"
           />
         </div>
-        <button class="btn-filter">
-          <i class="fas fa-filter"></i> Filtre
-        </button>
+       
       </div>
 
       <!-- Table -->
@@ -46,6 +44,7 @@
                        (change)="toggleAllSelection()"/>
               </th>
               <th>Numero de serie</th>
+              <th>Numero de serie</th>
               <th>Type de Pompe</th>
               <th>Prix Unitaire (L)</th>
               <th>Status</th>
@@ -57,6 +56,8 @@
               <td>
                 <input type="checkbox" [(ngModel)]="pompe.selected" (change)="checkSelection()"/>
               </td>
+              <td>{{ pompe.numeroSerie }}</td>
+              <td>{{ pompe.typeCarburant }}</td>
               <td>{{ pompe.numeroSerie }}</td>
               <td>{{ pompe.typeCarburant }}</td>
               <td>{{ pompe.prix }} FCFA</td>
@@ -96,7 +97,11 @@
       <h2><i class="fas fa-gas-pump"></i> Ajouter une Pompe</h2>
       <label>Type de Pompe :</label>
       <select [(ngModel)]="newPump.typeCarburant">
+      <select [(ngModel)]="newPump.typeCarburant">
           <option value="" disabled selected>Sélectionnez un type</option>
+          <option value="diesel">diesel</option>
+          <option value="gazoil">gazoil</option>
+          <option value="gpl">gpl</option>
           <option value="diesel">diesel</option>
           <option value="gazoil">gazoil</option>
           <option value="gpl">gpl</option>
@@ -113,6 +118,7 @@
       <h2><i class="fas fa-gas-pump"></i> Modifier la Pompe</h2>
       <label>Type de Pompe :</label>
       <input *ngIf="selectedPump" type="text" [(ngModel)]="selectedPump.typeCarburant">
+      <input *ngIf="selectedPump" type="text" [(ngModel)]="selectedPump.typeCarburant">
       <label>Prix Unitaire (L) :</label>
       <input *ngIf="selectedPump" type="number" [(ngModel)]="selectedPump.prix">
       <button *ngIf="selectedPump" (click)="editPump(selectedPump)">Modifier</button>
@@ -123,6 +129,8 @@
   <div class="modal-content">
       <span class="close" (click)="closeModal('viewModal')">&times;</span>
       <h2><i class="fas fa-gas-pump"></i> Détails de la Pompe</h2>
+      <p><strong>Type :</strong> {{ selectedPump?.typeCarburant }}</p>
+      <p><strong>Prix Unitaire :</strong> {{ selectedPump?.prix }} FCFA</p>
       <p><strong>Type :</strong> {{ selectedPump?.typeCarburant }}</p>
       <p><strong>Prix Unitaire :</strong> {{ selectedPump?.prix }} FCFA</p>
   </div>
