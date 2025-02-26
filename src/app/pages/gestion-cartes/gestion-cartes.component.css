@@ -152,6 +152,18 @@ th, td {
 .btn-action.view { color: #2bb3e0; }
 .btn-action.delete { color: #dc2626; }
 .btn-action.settings { color: #4b5563; }
+.btn-toggle {  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 12px;
+  background-color: #2BB3E0;
+  color: #ffffff;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: background-color 0.2s;
+ }
+
 
 .btn-recharge {
     display: flex;
