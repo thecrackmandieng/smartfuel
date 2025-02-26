@@ -96,25 +96,6 @@ export class GestionCartesComponent implements OnInit {
     );
   }
 
-  constructor(private clientService: ClientService) {
-    if (!clientService) {
-      console.error("Le service ClientService est undefined !");
-    }
-    // Chargement initial des clients
-    this.loadClients();
-  }
-  // Récupération des clients via le service
-  loadClients() {
-    this.clientService.getClients().subscribe(
-      (clients) => {
-        this.cartes = clients;
-        this.filteredCartes = [...clients];
-      },
-      (error) => {
-        console.error("Erreur lors de la récupération des clients", error);
-      }
-    );
-  }
   // Filtrer la liste en fonction de la recherche
   onSearch() {
     if (!this.searchTerm.trim()) {
