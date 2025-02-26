@@ -57,7 +57,7 @@ export class CrudService {
 
   // Recharger la carte d'un utilisateur
   rechargerCarte(userId: string, montantRecharge: number): Observable<any> {
-    return this.http.post(`${this.baseUrl}/rechargeCarte/${userId}`, { montantRecharge });
+    return this.http.put(`${this.baseUrl}/payment/rechargeCarte/${userId}`, { montantRecharge });
   }
 
   // Bloquer les boutons d'action d'un utilisateur

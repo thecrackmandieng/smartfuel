@@ -142,13 +142,7 @@
     <label>Téléphone :</label>
     <input *ngIf="selectedUser" type="text" [(ngModel)]="selectedUser.telephone" class="input-field">
     <div *ngIf="errors['telephone']" class="error">{{ errors['telephone'] }}</div>
-
-    <label>Rôle :</label>
-    <select *ngIf="selectedUser" [(ngModel)]="selectedUser.role" class="select-field">
-        <option value="admin">Admin</option>
-        <option value="client">Client</option>
-        <option value="pompiste">Pompiste</option>
-    </select>
+    
     <div *ngIf="errors['role']" class="error">{{ errors['role'] }}</div>
 
     <button *ngIf="selectedUser" (click)="editUser(selectedUser)" class="btn btn-edit">Modifier</button>
