@@ -13,7 +13,7 @@ export class AuthGuard implements CanActivate {
     console.log('Rôle de l\'utilisateur:', userRole);
     
     // Vérifiez si l'utilisateur a le rôle requis
-    if (userRole === 'admin' || userRole === 'pompiste') { // Remplacez 'admin' par le rôle requis pour accéder à la route
+    if (userRole === 'admin' || userRole === 'pompiste' || userRole === 'client') { // Remplacez 'admin' par le rôle requis pour accéder à la route
       return true; // Autorise l'accès à la route
     } else {
       this.router.navigate(['/']); // Redirige vers la page de connexion ou une autre page

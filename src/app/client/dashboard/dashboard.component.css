@@ -95,16 +95,23 @@ body, html {
   cursor: pointer;
 }
 
-.select-btn {
-  position: absolute; /* Position the button absolutely */
-  top: 0; /* Align to the top */
-  right: 0; /* Align to the left */
-  font-size: 1rem; /* Adjust the size as needed */
-  background-color: rgba(255, 255, 255, 0.8); /* Optional: Add background color */
-  border: 1px solid #ccc; /* Optional: Add border */
-  border-radius: 5px; /* Optional: Add border radius */
-  padding: 5px 10px; /* Optional: Add padding */
+/* dashboard.component.css */
+#fuel-select {
+  background-color: green;
+  color: white;
+  border: none;
+  padding: 10px;
+  font-size: 16px;
+  cursor: pointer;
+  box-shadow: 0 4px 6px rgba(255, 255, 255, 0.3);
+  transition: box-shadow 0.3s ease;
+  border-radius: 4px;
 }
+
+#fuel-select:hover, #fuel-btn:hover {
+  box-shadow: 0 6px 8px rgba(0, 0, 0, 0.2);
+}
+
 
 .fuel-title {
   font-size: 12px; /* Adjust the size as needed */
@@ -305,4 +312,16 @@ button:hover {
   .cancel-btn, .validate-btn {
     width: 100%;
   }
+}
+
+.power-btn {
+  position: absolute; /* Positionnement absolu */
+  top: 10px; /* Ajustez la distance par rapport au haut */
+  right: 10px; /* Ajustez la distance par rapport à la droite */
+  font-size: 2rem;
+  color: red;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  margin-left: 0; /* Pour enlever toute marge à gauche si nécessaire */
 }

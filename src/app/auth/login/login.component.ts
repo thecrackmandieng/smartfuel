@@ -135,9 +135,14 @@ export class LoginComponent implements AfterViewInit {
                             this.router.navigate(['/admin/dashboard']); // Redirection vers la page admin/dashboard
                         }, 100);
                     } else if (role === "pompiste") {
-                      console.log('Redirection vers /admin/pompiste'); // Vérification
+                        console.log('Redirection vers /admin/pompiste'); // Vérification
                         setTimeout(() => {
                             this.router.navigate(['pompiste/dashboard']); // Redirection vers la page admin/pompiste
+                        }, 100);
+                    } else if (role === "client") {
+                        console.log('Redirection vers /client/dashboard'); // Vérification
+                        setTimeout(() => {
+                            this.router.navigate(['/client/dashboard']); // Redirection vers la page client/dashboard
                         }, 100);
                     } else {
                         // Gérer d'autres rôles si nécessaire
@@ -149,14 +154,10 @@ export class LoginComponent implements AfterViewInit {
                 }
             },
             (error) => {
-                console.error('Erreur API:', error);
-                this.handleIncorrectAttempt();
-                this.errorMessage = 'Erreur de connexion';
+                console.error('Erreur lors de l\'authentification:', error);
+                this.errorMessage = 'Erreur lors de la connexion. Veuillez réessayer.';
             }
         );
-    } else {
-        this.clearInputs();
-        this.errorMessage = 'Veuillez entrer un code';
     }
 }
 

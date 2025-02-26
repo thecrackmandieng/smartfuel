@@ -2,13 +2,21 @@
   <div class="dashboard-container">
     <div class="overlay-card">
       <div class="overlay">
+        <button class="power-btn" (click)="logout()">
+          <i class="fas fa-power-off"></i>
+        </button>
         <div class="fuel-options">
+      
+          <!-- Déplacez le bouton et le menu déroulant en haut -->
           <div class="fuel-card">
             <button id="fuel-btn" class="icon-btn">
               <i class="fas fa-gas-pump"></i> DIESEL
             </button>
-            <button id="select-btn" class="select-btn">GAZOIL</button>
+            <select id="fuel-select" class="select-btn">
+              <option *ngFor="let fuel of availableFuelTypes" [value]="fuel">{{ fuel.toUpperCase() }}</option>
+            </select>
           </div>
+          <!-- Les champs de saisie restent en dessous -->
           <div id="input-fields" class="input-fields" style="display: none;">
             <label for="amount">Montant:</label>
             <input type="number" id="amount" name="amount">
