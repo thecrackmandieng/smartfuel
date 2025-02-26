@@ -16,18 +16,18 @@ body, html {
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); /* Add shadow for card effect */
   margin-top: 20px; /* Adjust the top margin as needed */
 }
-
 .overlay {
-  background: url('../../../assets/pompistbg.png') center/cover no-repeat; /* Use 'cover' to fill the card */
-  height: 90vh; /* Adjust this height as needed */
+  background: url('../../../assets/pompistbg.png') center/cover no-repeat;
+  height: 90vh;
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
   position: relative;
-  border-radius: 25px; /* Adjust the border radius as needed */
-  overflow: hidden; /* Ensure content does not overflow the card */
+  border-radius: 25px;
+  overflow: hidden;
 }
+
 
 .header {
   display: flex;
@@ -219,6 +219,31 @@ button {
 button:hover {
   opacity: 0.9;
 }
+
+
+.card-header {
+  position: absolute;
+  top: 20px;
+  left: 20px; /* Change to left to position it on the left side */
+  display: flex;
+  align-items: center;
+  z-index: 10; /* Ensure the header is above other elements */
+  background-color: rgba(0, 0, 0, 0.5); /* Background color for visibility */
+  border-radius: 5px;
+  padding: 5px 10px;
+}
+
+.header-text {
+  font-size: 24px;
+  font-weight: bold;
+  color: white;
+}
+
+.header-text i {
+  margin-left: 8px;
+  font-size: 24px;
+}
+
 
 /* Media queries for responsiveness */
 @media (max-width: 1024px) {

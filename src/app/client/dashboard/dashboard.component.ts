@@ -14,7 +14,7 @@ export class ClientDashboardComponent implements OnInit {
   private huilePricePerLiter = 1100;
   private autrePricePerLiter = 1200;
   private selectedFuelType: 'diesel' | 'gazoil' | 'huile' | 'autre' = 'diesel';
-  public availableFuelTypes = ['diesel', 'gazoil', 'huile', 'autre'];
+  public availableFuelTypes = ['diesel', 'gazoil',];
   private soldeCompte = 100000;
   public errorMessage: string = '';
   private decrementInterval: any;
