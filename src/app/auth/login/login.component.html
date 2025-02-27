@@ -1,9 +1,9 @@
 <div class="login-container">
   <div class="login-content">
-    <form (ngSubmit)="onSubmit()" #loginForm="ngForm">
+    <form (ngSubmit)="onSubmit()" *ngIf="!isLocked; else lockedTemplate" #loginForm="ngForm">
       <div class="form-group">
         <label for="code" class="code-label">CODE</label>
-        <div class="code-inputs-wrapper" *ngIf="!isLocked; else lockedTemplate">
+        <div class="code-inputs-wrapper">
           <div class="code-inputs">
             <input
               type="text"
@@ -54,26 +54,19 @@
               required
             />
           </div>
+          <div *ngIf="errorMessage" class="error-message">{{ errorMessage }}</div>
         </div>
-        <ng-template #lockedTemplate>
-          <div class="locked-message">
-            Réessayer dans {{ lockTimeLeft }} secondes
-            <div class="progress-bar">
-              <div class="progress" [style.width.%]="progress"></div>
-            </div>
-          </div>
-        </ng-template>
       </div>
-      <div *ngIf="errorMessage" class="error-message">{{ errorMessage }}</div>
     </form>
-  </div>
 
-  <!-- Modal d'erreur -->
-  <div class="modal" [class.show]="showErrorModal" *ngIf="showErrorModal">
-    <div class="modal-content">
-      <h3>Erreur</h3>
-      <p>{{ errorMessage }}</p>
-      <button (click)="closeModal()">Fermer</button>
-    </div>
+    <ng-template #lockedTemplate>
+      <div class="locked-message">
+        
+        <div class="progress-bar">
+          Réessayer dans {{ lockTimeLeft }} secondes
+          <div class="progress" [style.width.%]="progress"></div>
+        </div>
+      </div>
+    </ng-template>
   </div>
 </div>

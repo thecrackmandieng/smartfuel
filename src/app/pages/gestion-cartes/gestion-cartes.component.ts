@@ -44,45 +44,78 @@ export class GestionCartesComponent implements OnInit {
   currentPage: number = 1; // Ajout de la propriété pour la page actuelle
   itemsPerPage: number = 8; // Nombre d'éléments par page
   totalItems: number = 0; // Total d'éléments
+  formSubmitted = false;  // Ajout de cette variable pour savoir si le formulaire a été soumis
+
 
   constructor(private crudService: CrudService, private cdr: ChangeDetectorRef) {}
 
   ngOnInit() {
     this.getUsers();
   }
+  submitForm() {
+    this.formSubmitted = true;
+    if (this.validateForm()) {
+      // Si le formulaire est valide, on peut procéder à l'action (comme envoyer les données)
+      this.editUser(this.selectedUser);
+    } else {
+      // Si le formulaire n'est pas valide, vous pouvez afficher un message d'erreur générique ou gérer les erreurs autrement
+      console.log('Formulaire non valide');
+    }
+  }
+  get showErrorMessages() {
+    return this.formSubmitted;
+  }
 
   validateForm(): boolean {
-    this.errors = {};
+    this.errors = {}; // Réinitialiser les erreurs
     let valid = true;
-
+  
+    // Vérification du prénom
     if (!this.newUser.prenom || !/^[A-Za-zÀ-ÿ -]+$/.test(this.newUser.prenom)) {
       this.errors['prenom'] = "Le prénom est invalide (lettres et espaces uniquement)";
       valid = false;
     }
-
+  
+    // Vérification du nom
     if (!this.newUser.nom || !/^[A-Za-zÀ-ÿ -]+$/.test(this.newUser.nom)) {
       this.errors['nom'] = "Le nom est invalide (lettres et espaces uniquement)";
       valid = false;
     }
-
+  
+    // Vérification de l'email
     if (!this.newUser.email || !/^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/.test(this.newUser.email)) {
       this.errors['email'] = "L'email est invalide";
       valid = false;
     }
-
+  
+    // Vérification du téléphone
     if (!this.newUser.telephone || !/^\d{8,15}$/.test(this.newUser.telephone)) {
       this.errors['telephone'] = "Le téléphone doit contenir entre 8 et 15 chiffres";
       valid = false;
     }
-
+  
+    // Vérification du rôle
     if (!this.newUser.role) {
       this.errors['role'] = "Veuillez sélectionner un rôle";
       valid = false;
     }
-
+  
+    // Si le rôle est 'client', vérifier les champs carburant et montant dû
+    if (this.newUser.role === 'client') {
+      if (!this.newUser.carburant) {
+        this.errors['carburant'] = "Le champ 'carburant' est requis pour les clients.";
+        valid = false;
+      }
+      if (this.newUser.montantDu === undefined || this.newUser.montantDu < 0) {
+        this.errors['montantDu'] = "Le champ 'montant dû' doit être positif pour les clients.";
+        valid = false;
+      }
+    }
+  
+    // Si le formulaire n'est pas valide, retourner false
     return valid;
   }
-
+  
   getUsers() {
     this.crudService.getUsers().subscribe(
       (data: Utilisateur[]) => {

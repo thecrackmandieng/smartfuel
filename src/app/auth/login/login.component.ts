@@ -1,9 +1,10 @@
-import { Component, ViewChild, ElementRef, AfterViewInit } from '@angular/core';
+import { Component, ViewChild, ElementRef, AfterViewInit, OnDestroy } from '@angular/core';
 import { Router } from '@angular/router';
 import { AuthService } from '../../services/auth.service';
 import { FormsModule } from '@angular/forms';
 import { CommonModule } from '@angular/common';
-import { RfidService } from '../../services/rfid.service'; // Import du service
+import { RfidService } from '../../services/rfid.service';
+import { Subscription, interval } from 'rxjs';
 
 @Component({
   selector: 'app-login',
@@ -12,10 +13,12 @@ import { RfidService } from '../../services/rfid.service'; // Import du service
   templateUrl: './login.component.html',
   styleUrls: ['./login.component.css']
 })
-export class LoginComponent implements AfterViewInit {
+export class LoginComponent implements AfterViewInit, OnDestroy {
   @ViewChild('input1') input1!: ElementRef;
+  @ViewChild('input2') input2!: ElementRef;
+  @ViewChild('input3') input3!: ElementRef;
+  @ViewChild('input4') input4!: ElementRef;
 
-  // Typage des credentials pour accepter uniquement les clés 'code1', 'code2', 'code3', 'code4'
   credentials: { [key in 'code1' | 'code2' | 'code3' | 'code4']: string } = {
     code1: '',
     code2: '',
@@ -28,64 +31,77 @@ export class LoginComponent implements AfterViewInit {
   isLocked = false;
   lockTimeLeft = 15;
   progress = 100;
-  showErrorModal: boolean = false;
+  private focusSubscription!: Subscription;
+  private hideInputTimeout!: any;
 
   constructor(private authService: AuthService, private router: Router, private rfidService: RfidService) {}
 
   ngAfterViewInit(): void {
-    this.input1.nativeElement.focus(); // Focus initial sur le premier champ
-     // Écouter les scans RFID et afficher les informations de l'utilisateur
-       
-  // Écouter les scans RFID et afficher les informations de l'utilisateur
-  this.rfidService.listenForScan().subscribe(
-    (user) => {
-      console.log('🆔 Utilisateur détecté via RFID:', user);
-      console.log(`Utilisateur détecté: ${user.nom} - Rôle: ${user.role}`);
+    this.input1.nativeElement.focus();
 
-      if (user.role === 'admin') {
-        this.router.navigate(['admin/dashboaradmin']); // Rediriger vers la page admin/dashboardadmin
-      } else {
-        console.log('Accès refusé : utilisateur non admin.');
-        this.showError('Accès refusé : utilisateur non admin.'); // Afficher le message d'erreur
+    // Écouter les scans RFID et afficher les informations de l'utilisateur
+    this.rfidService.listenForScan().subscribe(
+      (user) => {
+        console.log('🆔 Utilisateur détecté via RFID:', user);
+        console.log(`Utilisateur détecté: ${user.nom} - Rôle: ${user.role}`);
+
+        if (user.role === 'admin') {
+          this.router.navigate(['admin/dashboaradmin']);
+        } else {
+          console.log('Accès refusé : utilisateur non admin.');
+          this.showError('Accès refusé : utilisateur non admin.');
+        }
+      },
+      (error) => {
+         console.error('Erreur lors de la lecture RFID:', error);
+        this.showError('Erreur lors de la lecture RFID.'); 
       }
-    },
-    (error) => {
-      console.error('Erreur lors de la lecture RFID:', error);
-      this.showError('Erreur lors de la lecture RFID.'); // Afficher un message d'erreur générique
-    }
-  );
+    );
 
-  // Corriger la gestion des erreurs
-  this.rfidService.listenForErrors().subscribe(
-    (errorMessage: string) => { // Changez ici pour recevoir une chaîne de caractères
-      this.showError(errorMessage); // Afficher le message d'erreur reçu
-    }
-  );
+    this.rfidService.listenForErrors().subscribe(
+      (errorMessage: string) => {
+        this.showError(errorMessage);
+      }
+    );
+
+    // Maintenir le focus sur le premier champ vide
+    this.focusSubscription = interval(100).subscribe(() => {
+      if (!this.credentials.code1) {
+        this.input1.nativeElement.focus();
+      } else if (!this.credentials.code2) {
+        this.input2.nativeElement.focus();
+      } else if (!this.credentials.code3) {
+        this.input3.nativeElement.focus();
+      } else if (!this.credentials.code4) {
+        this.input4.nativeElement.focus();
+      }
+    });
   }
 
-  // Fonction pour afficher le modal d'erreur
+  ngOnDestroy(): void {
+    if (this.focusSubscription) {
+      this.focusSubscription.unsubscribe();
+    }
+    if (this.hideInputTimeout) {
+      clearTimeout(this.hideInputTimeout);
+    }
+  }
+
   showError(message: string) {
     this.errorMessage = message;
-    this.showErrorModal = true;
   }
 
-  // Fonction pour fermer le modal
-  closeModal() {
-    this.showErrorModal = false;
-    this.errorMessage = ''; // Réinitialise le message d'erreur
-  }
-
-  // Changement de typage pour 'controlName' afin qu'il soit l'une des clés de credentials
   onInputChange(event: any, controlName: 'code1' | 'code2' | 'code3' | 'code4', nextInput: any): void {
     const input = event.target;
     const value = input.value;
 
-    // Si la longueur de la valeur est 1, mettre à jour la valeur correspondante
     if (value.length === 1) {
-      this.credentials[controlName] = value; // Mettre à jour credentials avec la valeur entrée
+      this.credentials[controlName] = value;
+
+      // Masquer la valeur immédiatement
+      input.value = '*';
     }
 
-    // Si une autre entrée existe, passer au champ suivant
     if (nextInput) {
       nextInput.focus();
     }
@@ -96,22 +112,19 @@ export class LoginComponent implements AfterViewInit {
   filterInput(event: KeyboardEvent, controlName: string, input: any, prevInput: any): void {
     const allowedKeys = ['Backspace', 'ArrowLeft', 'ArrowRight', 'Tab'];
 
-    // Ne permettre que les chiffres ou certaines touches comme backspace
     if (!allowedKeys.includes(event.key) && !/^[0-9]$/.test(event.key)) {
       event.preventDefault();
     } else if (event.key === 'Backspace' && input.value === '' && prevInput) {
-      // Si backspace et champ vide, revenir au champ précédent
       prevInput.focus();
     }
   }
 
   showTemporaryValue(input: any): void {
-    input.select(); // Sélectionner la valeur pour une édition facile
+    input.select();
   }
 
   checkAndSubmit(): void {
     const code = this.credentials.code1 + this.credentials.code2 + this.credentials.code3 + this.credentials.code4;
-    // Si tous les champs sont remplis, soumettre le formulaire
     if (code.length === 4) {
       this.onSubmit();
     }
@@ -120,47 +133,44 @@ export class LoginComponent implements AfterViewInit {
   onSubmit(): void {
     const code = this.credentials.code1 + this.credentials.code2 + this.credentials.code3 + this.credentials.code4;
 
-    console.log('Code envoyé:', code);  // Vérification
+    console.log('Code envoyé:', code);
 
     if (code) {
-        this.authService.authenticate({ codeSecret: code }).subscribe(
-            (response) => {
-                console.log('Réponse API:', response);  // Vérification de la réponse
+      this.authService.authenticate({ codeSecret: code }).subscribe(
+        (response) => {
+          console.log('Réponse API:', response);
 
-                if (response.msg === 'Connexion réussie') {
-                    // Vérifiez le rôle dans la réponse
-                    const role = response.role; // Assurez-vous que la réponse inclut le rôle
-                    if (role === "admin") {
-                        setTimeout(() => {
-                            this.router.navigate(['/admin/dashboard']); // Redirection vers la page admin/dashboard
-                        }, 100);
-                    } else if (role === "pompiste") {
-                        console.log('Redirection vers /admin/pompiste'); // Vérification
-                        setTimeout(() => {
-                            this.router.navigate(['pompiste/dashboard']); // Redirection vers la page admin/pompiste
-                        }, 100);
-                    } else if (role === "client") {
-                        console.log('Redirection vers /client/dashboard'); // Vérification
-                        setTimeout(() => {
-                            this.router.navigate(['/client/dashboard']); // Redirection vers la page client/dashboard
-                        }, 100);
-                    } else {
-                        // Gérer d'autres rôles si nécessaire
-                        this.errorMessage = 'Accès non autorisé pour ce rôle';
-                    }
-                } else {
-                    this.handleIncorrectAttempt();
-                    this.errorMessage = 'Code incorrect';
-                }
-            },
-            (error) => {
-                console.error('Erreur lors de l\'authentification:', error);
-                this.errorMessage = 'Erreur lors de la connexion. Veuillez réessayer.';
+          if (response.msg === 'Connexion réussie') {
+            const role = response.role;
+            if (role === "admin") {
+              setTimeout(() => {
+                this.router.navigate(['/admin/dashboard']);
+              }, 100);
+            } else if (role === "pompiste") {
+              console.log('Redirection vers /admin/pompiste');
+              setTimeout(() => {
+                this.router.navigate(['pompiste/dashboard']);
+              }, 100);
+            } else if (role === "client") {
+              console.log('Redirection vers /client/dashboard');
+              setTimeout(() => {
+                this.router.navigate(['/client/dashboard']);
+              }, 100);
+            } else {
+              this.errorMessage = 'Accès non autorisé pour ce rôle';
             }
-        );
+          } else {
+            this.handleIncorrectAttempt();
+          }
+        },
+        (error) => {
+          console.error('Erreur lors de l\'authentification:', error);
+          this.errorMessage = 'Erreur lors de la connexion. Veuillez réessayer.';
+          this.handleIncorrectAttempt();
+        }
+      );
     }
-}
-
+  }
 
   handleIncorrectAttempt(): void {
     this.incorrectAttempts++;
@@ -181,18 +191,20 @@ export class LoginComponent implements AfterViewInit {
       if (this.lockTimeLeft <= 0) {
         clearInterval(interval);
         this.isLocked = false;
-        this.errorMessage = null; // Réinitialiser le message d'erreur
+        this.errorMessage = null;
         this.clearInputs();
       }
-    }, 1000); // 1 seconde
+    }, 1000);
   }
 
   clearInputs(): void {
     this.credentials = { code1: '', code2: '', code3: '', code4: '' };
-    // Vérifiez si input1 est défini avant de l'utiliser
+    this.input1.nativeElement.value = '';
+    this.input2.nativeElement.value = '';
+    this.input3.nativeElement.value = '';
+    this.input4.nativeElement.value = '';
     if (this.input1 && this.input1.nativeElement) {
-      this.input1.nativeElement.focus(); // Revenir au premier champ si pas verrouillé
+      this.input1.nativeElement.focus();
     }
   }
-  
 }

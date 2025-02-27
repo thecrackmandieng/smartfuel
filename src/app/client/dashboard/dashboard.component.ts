@@ -1,14 +1,16 @@
 import { Component, OnInit, Renderer2, ElementRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { HttpClientModule } from '@angular/common/http';
 import { AuthService } from '../../services/auth.service';
 import { Router } from '@angular/router';
+import { CrudService } from '../../services/crud.service';
 
 @Component({
   selector: 'app-client-dashboard',
   standalone: true,
   templateUrl: './dashboard.component.html',
   styleUrls: ['./dashboard.component.css'],
-  imports: [CommonModule]
+  imports: [CommonModule, HttpClientModule]
 })
 export class ClientDashboardComponent implements OnInit {
   private dieselPricePerLiter = 1000;
@@ -17,15 +19,27 @@ export class ClientDashboardComponent implements OnInit {
   private autrePricePerLiter = 1200;
   private selectedFuelType: 'diesel' | 'gazoil' | 'huile' | 'autre' = 'diesel';
   public availableFuelTypes = ['diesel', 'gazoil', 'huile', 'autre'];
-  private soldeCompte = 100000;
+  public soldeCompte = 0; // Initialisé à 0, sera mis à jour après récupération
   public errorMessage: string = '';
   private decrementInterval: any;
   public isLoggedIn: boolean = false;
 
-  constructor(private renderer: Renderer2, private el: ElementRef, private authService: AuthService,  private router: Router) {}
+  constructor(
+    private renderer: Renderer2,
+    private el: ElementRef,
+    private authService: AuthService,
+    private router: Router,
+    private crudService: CrudService
+  ) {}
 
   ngOnInit(): void {
-    this.isLoggedIn = this.authService.isAuthenticated(); // Vérifiez l'authentification lors de l'initialisation
+    this.isLoggedIn = this.authService.isAuthenticated();
+    const userId = this.authService.getUserId();
+    console.log('User ID:', userId); // Vérifiez l'ID de l'utilisateur
+    if (userId) {
+      this.getUserBalance(userId);
+    }
+
     const fuelBtn = this.el.nativeElement.querySelector('#fuel-btn');
     const selectElement = this.el.nativeElement.querySelector('#fuel-select') as HTMLSelectElement;
     const inputFields = this.el.nativeElement.querySelector('#input-fields');
@@ -37,7 +51,6 @@ export class ClientDashboardComponent implements OnInit {
     if (fuelBtn && selectElement && inputFields && amountInput && volumeInput && validateBtn && cancelBtn) {
       this.updateFuelDisplay(fuelBtn, selectElement);
 
-      // Appliquer les styles au menu déroulant
       this.renderer.setStyle(selectElement, 'background-color', 'green');
       this.renderer.setStyle(selectElement, 'color', 'white');
       this.renderer.setStyle(selectElement, 'border', 'none');
@@ -69,7 +82,6 @@ export class ClientDashboardComponent implements OnInit {
         const amount = parseFloat(target.value);
         const volume = this.calculateVolume(amount);
 
-
         if (amount > this.soldeCompte) {
           this.errorMessage = 'Le montant dépasse le solde de votre compte.';
         } else {
@@ -93,7 +105,7 @@ export class ClientDashboardComponent implements OnInit {
 
         if (amountInputValue <= this.soldeCompte && this.selectedFuelType) {
           this.disableButtons(fuelBtn, selectElement);
-          this.startDecrement(amountInputValue, volumeInputValue, amountInput, volumeInput, inputFields, fuelBtn, selectElement);
+          this.acheterCarburant(amountInputValue, volumeInputValue);
         } else {
           this.errorMessage = 'Erreur: Le montant dépasse le solde du compte.';
         }
@@ -148,24 +160,56 @@ export class ClientDashboardComponent implements OnInit {
     this.renderer.setStyle(selectElement, 'pointer-events', 'none');
   }
 
-  startDecrement(amount: number, volume: number, amountInput: HTMLInputElement, volumeInput: HTMLInputElement, inputFields: HTMLElement, fuelBtn: HTMLElement, selectElement: HTMLSelectElement) {
-    const pricePerLiter = this.getPricePerLiter();
-    this.decrementInterval = setInterval(() => {
-      if (amount > 0) {
-        amount -= 1;
-        if (amount % pricePerLiter === 0) {
-          volume -= 1;
-        }
-        this.renderer.setProperty(amountInput, 'value', amount.toFixed(2));
-        this.renderer.setProperty(volumeInput, 'value', volume.toFixed(2));
-      } else {
-        clearInterval(this.decrementInterval);
-        this.resetForm(amountInput, volumeInput, inputFields, fuelBtn, selectElement);
+  getUserBalance(userId: string): void {
+    console.log('Fetching balance for user ID:', userId);
+    this.crudService.getUserBalance(userId).subscribe(
+      (response) => {
+        console.log('Balance fetched:', response);
+        this.soldeCompte = response.solde; // Mettez à jour le solde localement
+      },
+      (error) => {
+        console.error('Erreur lors de la récupération du solde:', error);
+        this.errorMessage = 'Erreur lors de la récupération du solde. Veuillez réessayer.';
       }
-    }, 1);
+    );
   }
-
+  acheterCarburant(amount: number, volume: number): void {
+    const userId = this.authService.getUserId(); // Récupérez l'ID de l'utilisateur connecté
+    console.log('User ID:', userId);
+    console.log('Carburant:', this.selectedFuelType);
+    console.log('Montant:', amount);
+    console.log('Volume:', volume);
   
+    this.crudService.acheterCarburant(userId, this.selectedFuelType, volume, amount).subscribe(
+      (response) => {
+        console.log('Achat réussi:', response);
+        this.getUserBalance(userId); // Récupérez le nouveau solde après l'achat
+        this.resetFormAfterPurchase();
+      },
+      (error) => {
+        console.error('Erreur lors de l\'achat:', error);
+        this.errorMessage = 'Erreur lors de l\'achat. Veuillez réessayer.';
+      }
+    );
+  }
+  
+  resetFormAfterPurchase(): void {
+    const amountInput = this.el.nativeElement.querySelector('#amount');
+    const volumeInput = this.el.nativeElement.querySelector('#volume');
+    const inputFields = this.el.nativeElement.querySelector('#input-fields');
+    const fuelBtn = this.el.nativeElement.querySelector('#fuel-btn');
+    const selectElement = this.el.nativeElement.querySelector('#fuel-select') as HTMLSelectElement;
+
+    this.renderer.setProperty(amountInput, 'value', '');
+    this.renderer.setProperty(volumeInput, 'value', '');
+    this.renderer.setStyle(inputFields, 'display', 'none');
+    this.errorMessage = '';
+    this.renderer.setStyle(fuelBtn, 'opacity', '1');
+    this.renderer.setStyle(fuelBtn, 'pointer-events', 'auto');
+    this.renderer.setStyle(selectElement, 'opacity', '1');
+    this.renderer.setStyle(selectElement, 'pointer-events', 'auto');
+    this.updateFuelDisplay(fuelBtn, selectElement);
+  }
 
   resetForm(amountInput: HTMLInputElement, volumeInput: HTMLInputElement, inputFields: HTMLElement, fuelBtn: HTMLElement, selectElement: HTMLSelectElement): void {
     this.renderer.setProperty(amountInput, 'value', '');
@@ -185,12 +229,10 @@ export class ClientDashboardComponent implements OnInit {
     }
   }
 
-  // Méthode de déconnexion
   logout(): void {
     this.authService.logout().subscribe(
       (response) => {
         console.log('Déconnexion réussie:', response);
-        // Redirigez l'utilisateur vers la page de connexion ou une autre page
         this.router.navigate(['/']);
       },
       (error) => {

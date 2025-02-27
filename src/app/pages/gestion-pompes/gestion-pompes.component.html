@@ -30,7 +30,6 @@
             class="search-input"
           />
         </div>
-       
       </div>
 
       <!-- Table -->
@@ -38,12 +37,7 @@
         <table>
           <thead>
             <tr>
-              <th>
-                <input type="checkbox" 
-                       [checked]="allSelected"
-                       (change)="toggleAllSelection()"/>
-              </th>
-              <th>Numero de serie</th>
+              <th><input type="checkbox" [checked]="allSelected" (change)="toggleAllSelection()"/></th>
               <th>Numero de serie</th>
               <th>Type de Pompe</th>
               <th>Prix Unitaire (L)</th>
@@ -53,11 +47,7 @@
           </thead>
           <tbody>
             <tr *ngFor="let pompe of filteredPompes">
-              <td>
-                <input type="checkbox" [(ngModel)]="pompe.selected" (change)="checkSelection()"/>
-              </td>
-              <td>{{ pompe.numeroSerie }}</td>
-              <td>{{ pompe.typeCarburant }}</td>
+              <td><input type="checkbox" [(ngModel)]="pompe.selected" (change)="checkSelection()"/></td>
               <td>{{ pompe.numeroSerie }}</td>
               <td>{{ pompe.typeCarburant }}</td>
               <td>{{ pompe.prix }} FCFA</td>
@@ -74,7 +64,7 @@
                   <button class="btn-action view" [disabled]="pompe.status !== 'Active'" (click)="openModal('viewModal', pompe)">
                     <i class="fas fa-eye"></i>
                   </button>
-                  <button class="btn-action delete" [disabled]="pompe.status !== 'Active'" (click)="deletePump(pompe)">
+                  <button class="btn-action delete" [disabled]="pompe.status !== 'Active'" (click)="openConfirmDeleteModal(pompe)">
                     <i class="fas fa-trash"></i>
                   </button>
                   <button class="btn-action block" (click)="toggleBlockPump(pompe)">
@@ -90,61 +80,62 @@
   </main>
 </div>
 
-<!-- Modals -->
 <div id="addModal" class="modal">
   <div class="modal-content">
-      <span class="close" (click)="closeModal('addModal')">&times;</span>
-      <h2><i class="fas fa-gas-pump"></i> Ajouter une Pompe</h2>
-      <label>Type de Pompe :</label>
-      <select [(ngModel)]="newPump.typeCarburant">
-          <option value="" disabled selected>Sélectionnez un type</option>
-          <option value="diesel">diesel</option>
-          <option value="gazoil">gazoil</option>
-          <option value="gpl">gpl</option>
-      </select>
-      <label>Prix Unitaire (L) :</label>
-      <input type="number" [(ngModel)]="newPump.prix">
-      <button (click)="addPump()">Ajouter</button>
+    <span class="close" (click)="closeModal('addModal')">&times;</span>
+    <h2><i class="fas fa-gas-pump"></i> Ajouter une Pompe</h2>
+
+    <label>Type de Pompe :</label>
+    <select [(ngModel)]="newPump.typeCarburant" required>
+      <option value="" disabled selected>Sélectionnez un type</option>
+      <option value="diesel">Diesel</option>
+      <option value="gazoil">Gazoil</option>
+      <option value="gpl">GPL</option>
+    </select>
+    <p class="error" *ngIf="isSubmitted && !newPump.typeCarburant">⚠ Le type de pompe est requis</p>
+
+    <label>Prix Unitaire (L) :</label>
+    <input type="number" [(ngModel)]="newPump.prix" required min="1">
+    <p class="error" *ngIf="isSubmitted && (!newPump.prix || newPump.prix < 1)">⚠ Le prix unitaire est requis et doit être supérieur à 0</p>
+
+    <button (click)="addPump()">Ajouter</button>
   </div>
 </div>
+
 
 <div id="editModal" class="modal">
   <div class="modal-content">
       <span class="close" (click)="closeModal('editModal')">&times;</span>
       <h2><i class="fas fa-gas-pump"></i> Modifier la Pompe</h2>
+
       <label>Type de Pompe :</label>
-      <input *ngIf="selectedPump" type="text" [(ngModel)]="selectedPump.typeCarburant">
-      <input *ngIf="selectedPump" type="text" [(ngModel)]="selectedPump.typeCarburant">
+      <input *ngIf="selectedPump" type="text" [(ngModel)]="selectedPump.typeCarburant" required>
+      <p class="error" *ngIf="selectedPump && !selectedPump.typeCarburant">⚠ Le type de pompe est requis</p>
+
       <label>Prix Unitaire (L) :</label>
-      <input *ngIf="selectedPump" type="number" [(ngModel)]="selectedPump.prix">
-      <button *ngIf="selectedPump" (click)="editPump(selectedPump)">Modifier</button>
+      <input *ngIf="selectedPump" type="number" [(ngModel)]="selectedPump.prix" required min="1">
+      <p class="error" *ngIf="selectedPump && (!selectedPump.prix || selectedPump.prix < 1)">⚠ Le prix unitaire est requis et doit être supérieur à 0</p>
+
+      <button *ngIf="selectedPump" (click)="editPump(selectedPump)" [disabled]="!selectedPump.typeCarburant || !selectedPump.prix || selectedPump.prix < 1">Modifier</button>
   </div>
 </div>
 
-<div id="viewModal" class="modal">
-  <div class="modal-content">
-      <span class="close" (click)="closeModal('viewModal')">&times;</span>
-      <h2><i class="fas fa-gas-pump"></i> Détails de la Pompe</h2>
-      <p><strong>Type :</strong> {{ selectedPump?.typeCarburant }}</p>
-      <p><strong>Prix Unitaire :</strong> {{ selectedPump?.prix }} FCFA</p>
-      <p><strong>Type :</strong> {{ selectedPump?.typeCarburant }}</p>
-      <p><strong>Prix Unitaire :</strong> {{ selectedPump?.prix }} FCFA</p>
-  </div>
-</div>
-
-<div id="deleteModal" class="modal">
-  <div class="modal-content">
-      <span class="close" (click)="closeModal('deleteModal')">&times;</span>
-      <h2><i class="fas fa-gas-pump"></i> Confirmer la Suppression</h2>
-      <p>Êtes-vous sûr de vouloir supprimer cette pompe ?</p>
-      <button (click)="confirmDeletePump()">Oui</button>
-      <button (click)="closeModal('deleteModal')">Non</button>
-  </div>
-</div>
+<!-- Message de succès -->
 <div id="successModal" class="modal">
   <div class="modal-content">
       <span class="close" (click)="closeModal('successModal')">&times;</span>
       <h2><i class="fas fa-check-circle"></i> Succès</h2>
       <p>La pompe a été ajoutée avec succès !</p>
+  </div>
+</div>
+
+<!-- Message de confirmation de suppression -->
+<div id="deleteModal" class="modal">
+  <div class="modal-content">
+    <span class="close" (click)="closeModal('deleteModal')">&times;</span>
+    <h2><i class="fas fa-gas-pump"></i> Confirmer la Suppression</h2>
+    <p>Êtes-vous sûr de vouloir supprimer la pompe <strong>{{ selectedPump?.numeroSerie }}</strong> ?</p>
+    <button (click)="confirmDeletePump()">Oui</button>
+    <button (click)="closeModal('deleteModal')">Non</button>
   </div>
 </div>

@@ -128,21 +128,28 @@
     <input *ngIf="selectedUser" type="text" [(ngModel)]="selectedUser.matricule" disabled class="input-field">
 
     <label>Prénom :</label>
-    <input *ngIf="selectedUser" type="text" [(ngModel)]="selectedUser.prenom" class="input-field">
+    <input *ngIf="selectedUser" type="text" [(ngModel)]="selectedUser.prenom" class="input-field" required>
     <div *ngIf="errors['prenom']" class="error">{{ errors['prenom'] }}</div>
 
     <label>Nom :</label>
-    <input *ngIf="selectedUser" type="text" [(ngModel)]="selectedUser.nom" class="input-field">
+    <input *ngIf="selectedUser" type="text" [(ngModel)]="selectedUser.nom" class="input-field" required>
     <div *ngIf="errors['nom']" class="error">{{ errors['nom'] }}</div>
 
     <label>Email :</label>
-    <input *ngIf="selectedUser" type="email" [(ngModel)]="selectedUser.email" class="input-field">
+    <input *ngIf="selectedUser" type="email" [(ngModel)]="selectedUser.email" class="input-field" required>
     <div *ngIf="errors['email']" class="error">{{ errors['email'] }}</div>
 
     <label>Téléphone :</label>
-    <input *ngIf="selectedUser" type="text" [(ngModel)]="selectedUser.telephone" class="input-field">
+    <input *ngIf="selectedUser" type="text" [(ngModel)]="selectedUser.telephone" class="input-field" required>
     <div *ngIf="errors['telephone']" class="error">{{ errors['telephone'] }}</div>
     
+    <label>Rôle :</label>
+    <select *ngIf="selectedUser" [(ngModel)]="selectedUser.role" class="input-field" required>
+      <option value="">Sélectionnez un rôle</option>
+      <option value="administrateur">Administrateur</option>
+      <option value="utilisateur">Utilisateur</option>
+      <option value="client">Client</option>
+    </select>
     <div *ngIf="errors['role']" class="error">{{ errors['role'] }}</div>
 
     <button *ngIf="selectedUser" (click)="editUser(selectedUser)" class="btn btn-edit">Modifier</button>
@@ -169,6 +176,7 @@
   </div>
 </div>
 
+<!-- MODAL DE SUPPRESSION -->
 <div id="deleteModal" class="modal">
   <div class="modal-content">
       <span class="close" (click)="closeModal('deleteModal')">&times;</span>
