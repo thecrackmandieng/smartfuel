@@ -1,9 +1,11 @@
-import { Component, OnInit, Renderer2, ElementRef } from '@angular/core';
+import { Component, OnInit, Renderer2, ElementRef, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { HttpClientModule } from '@angular/common/http';
 import { AuthService } from '../../services/auth.service';
 import { Router } from '@angular/router';
 import { CrudService } from '../../services/crud.service';
+import { RfidService } from '../../services/rfid.service';
+import { Subscription } from 'rxjs';
 
 @Component({
   selector: 'app-client-dashboard',
@@ -12,24 +14,30 @@ import { CrudService } from '../../services/crud.service';
   styleUrls: ['./dashboard.component.css'],
   imports: [CommonModule, HttpClientModule]
 })
-export class ClientDashboardComponent implements OnInit {
+export class ClientDashboardComponent implements OnInit, OnDestroy {
   private dieselPricePerLiter = 1000;
   private gazoilPricePerLiter = 900;
   private huilePricePerLiter = 1100;
   private autrePricePerLiter = 1200;
   private selectedFuelType: 'diesel' | 'gazoil' | 'huile' | 'autre' = 'diesel';
   public availableFuelTypes = ['diesel', 'gazoil', 'huile', 'autre'];
-  public soldeCompte = 0; // Initialisé à 0, sera mis à jour après récupération
+  public soldeCompte = 0;
   public errorMessage: string = '';
   private decrementInterval: any;
   public isLoggedIn: boolean = false;
+  private rfidSubscription!: Subscription;
+
+  nom: string = '';
+  role: string = '';
+  showForm: boolean = false;
 
   constructor(
     private renderer: Renderer2,
     private el: ElementRef,
     private authService: AuthService,
     private router: Router,
-    private crudService: CrudService
+    private crudService: CrudService,
+    private rfidService: RfidService
   ) {}
 
   ngOnInit(): void {
@@ -39,81 +47,112 @@ export class ClientDashboardComponent implements OnInit {
       this.getUserBalance(userId);
     }
 
-    const fuelBtn = this.el.nativeElement.querySelector('#fuel-btn') as HTMLElement;
-    const selectElement = this.el.nativeElement.querySelector('#fuel-select') as HTMLSelectElement;
-    const inputFields = this.el.nativeElement.querySelector('#input-fields') as HTMLElement;
-    const amountInput = this.el.nativeElement.querySelector('#amount') as HTMLInputElement;
-    const volumeInput = this.el.nativeElement.querySelector('#volume') as HTMLInputElement;
-    const validateBtn = this.el.nativeElement.querySelector('#validate-btn') as HTMLElement;
-    const cancelBtn = this.el.nativeElement.querySelector('#cancel-btn') as HTMLElement;
+    const elements = {
+      fuelBtn: this.el.nativeElement.querySelector('#fuel-btn') as HTMLElement,
+      selectElement: this.el.nativeElement.querySelector('#fuel-select') as HTMLSelectElement,
+      inputFields: this.el.nativeElement.querySelector('#input-fields') as HTMLElement,
+      amountInput: this.el.nativeElement.querySelector('#amount') as HTMLInputElement,
+      volumeInput: this.el.nativeElement.querySelector('#volume') as HTMLInputElement,
+      validateBtn: this.el.nativeElement.querySelector('#validate-btn') as HTMLElement,
+      cancelBtn: this.el.nativeElement.querySelector('#cancel-btn') as HTMLElement
+    };
 
-    if (fuelBtn && selectElement && inputFields && amountInput && volumeInput && validateBtn && cancelBtn) {
-      this.updateFuelDisplay(fuelBtn, selectElement);
+    if (Object.values(elements).some(el => !el)) return;
 
-      this.renderer.setStyle(selectElement, 'background-color', 'green');
-      this.renderer.setStyle(selectElement, 'color', 'white');
-      this.renderer.setStyle(selectElement, 'border', 'none');
-      this.renderer.setStyle(selectElement, 'padding', '10px');
-      this.renderer.setStyle(selectElement, 'font-size', '16px');
-      this.renderer.setStyle(selectElement, 'cursor', 'pointer');
-      this.renderer.setStyle(selectElement, 'box-shadow', '0 4px 6px rgba(0, 0, 0, 0.1)');
-      this.renderer.setStyle(selectElement, 'transition', 'box-shadow 0.3s ease');
-      this.renderer.setStyle(selectElement, 'border-radius', '4px');
+    this.updateFuelDisplay(elements.fuelBtn, elements.selectElement);
+    this.applyStylesToSelect(elements.selectElement);
 
-      this.renderer.listen(selectElement, 'mouseover', () => {
-        this.renderer.setStyle(selectElement, 'box-shadow', '0 6px 8px rgba(0, 0, 0, 0.2)');
-      });
+    this.rfidSubscription = this.rfidService.listenForScan().subscribe(
+      (user) => {
+        console.log('🆔 Utilisateur détecté via RFID:', user);
+        this.nom = user.nom;
+        this.role = user.role;
 
-      this.renderer.listen(selectElement, 'mouseout', () => {
-        this.renderer.setStyle(selectElement, 'box-shadow', '0 4px 6px rgba(0, 0, 0, 0.1)');
-      });
-
-      this.renderer.listen(fuelBtn, 'click', () => {
-        this.renderer.setStyle(inputFields, 'display', 'flex');
-      });
-
-      this.renderer.listen(selectElement, 'change', () => {
-        this.toggleFuelSelection(selectElement);
-      });
-
-      this.renderer.listen(amountInput, 'input', (event: Event) => {
-        const target = event.target as HTMLInputElement;
-        const amount = parseFloat(target.value);
-        const volume = this.calculateVolume(amount);
-
-        if (amount > this.soldeCompte) {
-          this.errorMessage = 'Le montant dépasse le solde de votre compte.';
-        } else {
-          this.errorMessage = '';
+        if (this.role === 'client') {
+          this.showForm = true;
+          this.renderer.setStyle(elements.inputFields, 'display', 'flex');
+          this.updateFuelDisplay(elements.fuelBtn, elements.selectElement);
         }
-      });
+      },
+      (error) => {
+        console.error('Erreur lors de la lecture RFID:', error);
+        this.errorMessage = 'Erreur lors de la lecture RFID.';
+      }
+    );
 
-      this.renderer.listen(volumeInput, 'input', (event: Event) => {
-        const target = event.target as HTMLInputElement;
-        const volume = parseFloat(target.value);
-        const amount = this.calculateAmount(volume);
+    this.renderer.listen(elements.amountInput, 'input', (event: Event) => {
+      const target = event.target as HTMLInputElement;
+      const amount = parseFloat(target.value);
+      if (isNaN(amount) || amount <= 0) {
+        this.errorMessage = 'Montant invalide';
+      } else if (amount > this.soldeCompte) {
+        this.errorMessage = 'Le montant dépasse le solde du compte.';
+      } else {
+        this.errorMessage = '';
+      }
+    });
 
-        if (amountInput) {
-          this.renderer.setProperty(amountInput, 'value', amount.toFixed(2));
-        }
-      });
+    this.renderer.listen(elements.volumeInput, 'input', (event: Event) => {
+      const target = event.target as HTMLInputElement;
+      const volume = parseFloat(target.value);
+      if (!isNaN(volume) && elements.amountInput) {
+        this.renderer.setProperty(elements.amountInput, 'value', this.calculateAmount(volume).toFixed(2));
+      }
+    });
 
-      this.renderer.listen(validateBtn, 'click', () => {
-        const amountInputValue = parseFloat(amountInput.value);
-        const volumeInputValue = parseFloat(volumeInput.value);
+    this.renderer.listen(elements.validateBtn, 'click', () => {
+      const amountInputValue = parseFloat(elements.amountInput.value);
+      const volumeInputValue = parseFloat(elements.volumeInput.value);
 
-        if (amountInputValue <= this.soldeCompte && this.selectedFuelType) {
-          this.disableButtons(fuelBtn, selectElement);
-          this.acheterCarburant(amountInputValue, volumeInputValue);
-        } else {
-          this.errorMessage = 'Erreur: Le montant dépasse le solde du compte.';
-        }
-      });
+      if (isNaN(amountInputValue) || isNaN(volumeInputValue) || amountInputValue <= 0 || volumeInputValue <= 0) {
+        this.errorMessage = 'Veuillez entrer un montant et un volume valides.';
+        return;
+      }
 
-      this.renderer.listen(cancelBtn, 'click', () => {
-        this.resetForm(amountInput, volumeInput, inputFields, fuelBtn, selectElement);
-      });
+      if (amountInputValue > this.soldeCompte) {
+        this.errorMessage = 'Erreur: Le montant dépasse le solde du compte.';
+        return;
+      }
+
+      this.disableButtons(elements.fuelBtn, elements.selectElement);
+      this.acheterCarburant(amountInputValue, volumeInputValue);
+    });
+
+    this.renderer.listen(elements.cancelBtn, 'click', () => {
+      this.resetForm(elements.amountInput, elements.volumeInput, elements.inputFields, elements.fuelBtn, elements.selectElement);
+    });
+  }
+
+  ngOnDestroy(): void {
+    if (this.rfidSubscription) {
+      this.rfidSubscription.unsubscribe();
     }
+  }
+
+  private applyStylesToSelect(selectElement: HTMLSelectElement): void {
+    const styles = {
+      'background-color': 'green',
+      'color': 'white',
+      'border': 'none',
+      'padding': '10px',
+      'font-size': '16px',
+      'cursor': 'pointer',
+      'box-shadow': '0 4px 6px rgba(0, 0, 0, 0.1)',
+      'transition': 'box-shadow 0.3s ease',
+      'border-radius': '4px'
+    };
+
+    Object.entries(styles).forEach(([key, value]) => {
+      this.renderer.setStyle(selectElement, key, value);
+    });
+
+    this.renderer.listen(selectElement, 'mouseover', () => {
+      this.renderer.setStyle(selectElement, 'box-shadow', '0 6px 8px rgba(0, 0, 0, 0.2)');
+    });
+
+    this.renderer.listen(selectElement, 'mouseout', () => {
+      this.renderer.setStyle(selectElement, 'box-shadow', '0 4px 6px rgba(0, 0, 0, 0.1)');
+    });
   }
 
   toggleFuelSelection(selectElement: HTMLSelectElement): void {
@@ -162,7 +201,7 @@ export class ClientDashboardComponent implements OnInit {
   getUserBalance(userId: string): void {
     this.crudService.getUserBalance(userId).subscribe(
       (response) => {
-        this.soldeCompte = response.solde; // Mettez à jour le solde localement
+        this.soldeCompte = response.solde;
       },
       (error) => {
         console.error('Erreur lors de la récupération du solde:', error);
@@ -172,7 +211,7 @@ export class ClientDashboardComponent implements OnInit {
   }
 
   acheterCarburant(amount: number, volume: number): void {
-    const userId = this.authService.getUserId(); // Récupérez l'ID de l'utilisateur connecté
+    const userId = this.authService.getUserId();
     console.log('User ID:', userId);
     console.log('Carburant:', this.selectedFuelType);
     console.log('Montant:', amount);
@@ -181,7 +220,7 @@ export class ClientDashboardComponent implements OnInit {
     this.crudService.acheterCarburant(userId, this.selectedFuelType, volume, amount).subscribe(
       (response) => {
         console.log('Achat réussi:', response);
-        this.getUserBalance(userId); // Récupérez le nouveau solde après l'achat
+        this.getUserBalance(userId);
         this.resetFormAfterPurchase();
         this.startDecrement(amount, volume, this.el.nativeElement.querySelector('#amount') as HTMLInputElement, this.el.nativeElement.querySelector('#volume') as HTMLInputElement, this.el.nativeElement.querySelector('#input-fields') as HTMLElement, this.el.nativeElement.querySelector('#fuel-btn') as HTMLElement, this.el.nativeElement.querySelector('#fuel-select') as HTMLSelectElement);
       },
@@ -240,7 +279,6 @@ export class ClientDashboardComponent implements OnInit {
     );
   }
 
-  // Gestion de la décrémentation en temps réel
   startDecrement(amount: number, volume: number, amountInput: HTMLInputElement, volumeInput: HTMLInputElement, inputFields: HTMLElement, fuelBtn: HTMLElement, selectElement: HTMLSelectElement) {
     console.log('Starting decrement:', { amount, volume });
     const pricePerLiter = this.getPricePerLiter();
