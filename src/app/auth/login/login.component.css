@@ -1,3 +1,4 @@
+
 .login-container {
   background-size: cover;
   background-position: center;
@@ -5,6 +6,9 @@
   display: flex;
   justify-content: center;
   align-items: center;
+  background: linear-gradient(to bottom, #2bb3e0, black);
+  margin: 0;
+  padding: 0;
   }
 
 .login-content {
@@ -30,6 +34,7 @@
   margin-left: 350px;
 }
 
+
 /* Ajoutez ces styles pour les champs de saisie */
 .code-inputs-wrapper {
   background-image: linear-gradient(to left, rgba(10, 10, 10, 0.0), rgba(10, 10, 10, 0.8)); /* Dégradé linéaire pour réduire l'opacité sur le côté gauche */
@@ -39,10 +44,12 @@
   display: flex;
   justify-content: center;
   align-items: center;
+  flex-direction: column; /* Aligner les éléments en colonne */
   margin-top: 10px; /* Ajustez la marge supérieure selon vos besoins */
-  width: 280px;
-  transform: translateX(-50px); /* Utilisez la propriété transform pour déplacer la carte vers la gauche */
+  width: 290px;
+  margin-left: -50px;
 }
+
 .code-inputs {
   display: flex;
   justify-content: space-between;
@@ -58,27 +65,29 @@
   border-radius: 50px;
   box-sizing: border-box;
 }
+
 .error-message {
   color: red;
   font-weight: bold;
   text-align: center;
   margin-top: 10px;
-  margin-left: 300px;
-  font-size: 30px;
-
+  font-size: 15px;
 }
 
 .locked-message {
   text-align: center;
-  margin-top: 20px;
+  margin-top: 30px;
+  margin-left: 20px;
+
 }
 
 .progress-bar {
-  width: 100%;
+  width: 40%;
   background-color: #f3f3f3;
   border-radius: 5px;
   overflow: hidden;
-  margin-top: 10px;
+  margin-top: 20px;
+  margin-left: 300px;
 }
 
 .progress {

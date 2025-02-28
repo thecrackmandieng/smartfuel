@@ -107,7 +107,8 @@ export class GestionCartesComponent implements OnInit {
       user.matricule.toLowerCase().includes(searchLower) ||
       user.prenom.toLowerCase().includes(searchLower) ||
       user.nom.toLowerCase().includes(searchLower) ||
-      user.email.toLowerCase().includes(searchLower)
+      user.email.toLowerCase().includes(searchLower)||
+      (user.telephone && user.telephone.includes(this.searchTerm.trim())) // Recherche par numéro de téléphone
     ).slice((this.currentPage - 1) * this.itemsPerPage, this.currentPage * this.itemsPerPage);
   }
   // Sélectionner/désélectionner toutes les cartes
@@ -211,12 +212,15 @@ export class GestionCartesComponent implements OnInit {
   }
 
   rechargeUser(user: Utilisateur) {
+    // Réinitialiser les erreurs à chaque appel
+    this.errors = {};
+  
     if (!this.rechargeAmount || this.rechargeAmount <= 0) {
       console.error("Le montant à recharger doit être supérieur à zéro.");
       this.errors['rechargeAmount'] = "Le montant à recharger doit être supérieur à zéro.";
-      return;
+      return; // Sortir de la méthode si le montant n'est pas valide
     }
-
+  
     this.crudService.rechargerCarte(user._id, this.rechargeAmount).subscribe(
       (response: any) => {
         console.log("Utilisateur rechargé avec succès :", response);
@@ -230,6 +234,7 @@ export class GestionCartesComponent implements OnInit {
       }
     );
   }
+  
 
   resetSearch() {
     this.searchTerm = '';
@@ -246,31 +251,93 @@ export class GestionCartesComponent implements OnInit {
     }
   }
 
-  editUser(selectedUser: Utilisateur | null) {
-    if (!selectedUser) {
-      console.warn("Utilisateur sélectionné introuvable !");
-      return;
-    }
-
-    this.crudService.editUser(selectedUser._id, selectedUser).subscribe(
-      (response: any) => {
-        const index = this.utilisateurs.findIndex(u => u._id === response.item._id);
-        if (index !== -1) {
-          this.utilisateurs[index] = response.item;
-          this.totalItems = this.utilisateurs.length; // Mettre à jour le total d'éléments
-          this.filteredUtilisateurs = this.utilisateurs.slice((this.currentPage - 1) * this.itemsPerPage, this.currentPage * this.itemsPerPage);
-          this.errors = {};
-          this.closeModal('editModal');
-          this.showModal('successModal', "Utilisateur modifié avec succès !");
-          this.cdr.detectChanges();
-        }
-      },
-      (error: any) => {
-        console.error("Erreur API :", error);
-        this.showModal('errorModal', "Erreur lors de la modification de l'utilisateur !");
-      }
-    );
+  // Méthode pour gérer les changements de champ et réinitialiser les erreurs correspondantes
+clearError(field: string) {
+  if (this.errors[field]) {
+    delete this.errors[field]; // Supprime l'erreur pour le champ spécifique
   }
+}
+
+editUser(selectedUser: Utilisateur | null) {
+  // Vérifier si un utilisateur a été sélectionné
+  if (!selectedUser) {
+    console.warn("Utilisateur sélectionné introuvable !");
+    return;
+  }
+
+  // Réinitialiser les erreurs
+  this.errors = {};
+
+  // Valider les champs de l'utilisateur
+  const isValid = this.validateFields(selectedUser);
+  if (!isValid) {
+    console.log("Des erreurs de validation sont présentes :", this.errors);
+    // Les erreurs seront affichées dans le formulaire
+    return; // Sortir de la méthode si des erreurs sont présentes
+  }
+
+  // Appel au service pour éditer l'utilisateur
+  this.crudService.editUser(selectedUser._id, selectedUser).subscribe(
+    (response: any) => {
+      const index = this.utilisateurs.findIndex(u => u._id === response.item._id);
+      if (index !== -1) {
+        this.utilisateurs[index] = response.item;
+        this.totalItems = this.utilisateurs.length; // Mettre à jour le total d'éléments
+        this.filteredUtilisateurs = this.utilisateurs.slice((this.currentPage - 1) * this.itemsPerPage, this.currentPage * this.itemsPerPage);
+        this.errors = {}; // Réinitialiser les erreurs après une édition réussie
+        this.closeModal('editModal'); // Fermer le modal d'édition
+        this.showModal('successModal', "Utilisateur modifié avec succès !"); // Afficher le message de succès
+        this.cdr.detectChanges(); // Forcer la détection des changements
+      }
+    },
+    (error: any) => {
+      console.error("Erreur API :", error);
+      this.showModal('errorModal', "Erreur lors de la modification de l'utilisateur !"); // Afficher le message d'erreur
+    }
+  );
+}
+
+  
+  
+  // Méthode de validation des champs
+  validateFields(user: Utilisateur): boolean {
+    let isValid = true;
+  
+    // Exemple de validation
+    if (!user.nom || user.nom.trim() === "") {
+      this.errors['nom'] = 'Le nom est requis.';
+      isValid = false;
+    }
+    if (!user.prenom || user.prenom.trim() === "") {
+      this.errors['prenom'] = 'Le prénom est requis.';
+      isValid = false;
+    }
+    if (!user.email || !this.validateEmail(user.email)) {
+      this.errors['email'] = 'L\'email est requis et doit être valide.';
+      isValid = false;
+    }
+    if (user.telephone && !this.validatePhoneNumber(user.telephone)) {
+      this.errors['telephone'] = 'Le numéro de téléphone doit être valide.';
+      isValid = false;
+    }
+    // Ajoutez d'autres validations selon vos besoins
+  
+    return isValid;
+  }
+  
+  
+  // Exemple de validation d'email
+  validateEmail(email: string): boolean {
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    return emailRegex.test(email);
+  }
+  
+  // Exemple de validation de numéro de téléphone
+  validatePhoneNumber(phone: string): boolean {
+    const phoneRegex = /^[0-9]+$/; // Vous pouvez ajuster ce regex selon vos besoins
+    return phoneRegex.test(phone);
+  }
+  
 
   deleteUser(user: Utilisateur) {
     if (!user || !user._id) {

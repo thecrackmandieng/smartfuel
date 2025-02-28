@@ -114,10 +114,13 @@
     <h2><i class="fas fa-plus-circle"></i> Recharger le Compte</h2>
     <label>Montant à Recharger :</label>
     <input type="number" [(ngModel)]="rechargeAmount" class="input-field" min="0" required>
+    <div *ngIf="errors['rechargeAmount']" class="error">{{ errors['rechargeAmount'] }}</div> <!-- Afficher le message d'erreur -->
+
     <button (click)="selectedUser && rechargeUser(selectedUser)" class="btn btn-recharge">Recharger</button>
     <button (click)="closeModal('rechargeModal')" class="btn btn-cancel">Annuler</button>
   </div>
 </div>
+
 
 <!-- MODAL D'ÉDITION DE L'UTILISATEUR -->
 <div id="editModal" class="modal">
@@ -128,26 +131,28 @@
     <input *ngIf="selectedUser" type="text" [(ngModel)]="selectedUser.matricule" disabled class="input-field">
 
     <label>Prénom :</label>
-    <input *ngIf="selectedUser" type="text" [(ngModel)]="selectedUser.prenom" class="input-field">
+    <input *ngIf="selectedUser" type="text" [(ngModel)]="selectedUser.prenom" class="input-field" (ngModelChange)="clearError('prenom')">
     <div *ngIf="errors['prenom']" class="error">{{ errors['prenom'] }}</div>
 
     <label>Nom :</label>
-    <input *ngIf="selectedUser" type="text" [(ngModel)]="selectedUser.nom" class="input-field">
+    <input *ngIf="selectedUser" type="text" [(ngModel)]="selectedUser.nom" class="input-field" (ngModelChange)="clearError('nom')">
     <div *ngIf="errors['nom']" class="error">{{ errors['nom'] }}</div>
 
     <label>Email :</label>
-    <input *ngIf="selectedUser" type="email" [(ngModel)]="selectedUser.email" class="input-field">
+    <input *ngIf="selectedUser" type="email" [(ngModel)]="selectedUser.email" class="input-field" (ngModelChange)="clearError('email')">
     <div *ngIf="errors['email']" class="error">{{ errors['email'] }}</div>
 
     <label>Téléphone :</label>
-    <input *ngIf="selectedUser" type="text" [(ngModel)]="selectedUser.telephone" class="input-field">
+    <input *ngIf="selectedUser" type="text" [(ngModel)]="selectedUser.telephone" class="input-field" (ngModelChange)="clearError('telephone')">
     <div *ngIf="errors['telephone']" class="error">{{ errors['telephone'] }}</div>
-    
+
     <div *ngIf="errors['role']" class="error">{{ errors['role'] }}</div>
 
     <button *ngIf="selectedUser" (click)="editUser(selectedUser)" class="btn btn-edit">Modifier</button>
   </div>
 </div>
+
+
 
 <!-- MODAL DE SUCCÈS -->
 <div id="successModal" class="modal">

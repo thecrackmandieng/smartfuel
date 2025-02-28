@@ -86,10 +86,91 @@ export class GestionUtilisateursComponent implements OnInit {
     return valid;
   }
 
+  validateFields(user: any, fieldName?: string): boolean {
+    // Réinitialise les erreurs pour le champ spécifié
+    if (fieldName) {
+        delete this.errors[fieldName];
+    } else {
+        this.errors = {}; // Réinitialise toutes les erreurs
+    }
+
+    // Validation des champs requis
+    if (!user.prenom || user.prenom.trim() === '') {
+        this.errors['prenom'] = 'Le prénom est requis.';
+    }
+
+    if (!user.nom || user.nom.trim() === '') {
+        this.errors['nom'] = 'Le nom est requis.';
+    }
+
+    const emailPattern = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
+    if (!user.email || !emailPattern.test(user.email)) {
+        this.errors['email'] = 'Veuillez entrer un email valide.';
+    }
+
+    if (!user.telephone || user.telephone.trim() === '') {
+        this.errors['telephone'] = 'Le téléphone est requis.';
+    }
+
+    if (!user.role) {
+        this.errors['role'] = 'Veuillez sélectionner un rôle.';
+    }
+
+    return Object.keys(this.errors).length === 0; // Retourne vrai si aucune erreur
+}
+
+
+// Méthode pour éditer l'utilisateur
+editUser(selectedUser: Utilisateur | null) {
+  console.log("Bouton Modifier cliqué", selectedUser); // Vérifier si la fonction est appelée
+
+  if (!selectedUser) {
+    console.warn("Utilisateur sélectionné introuvable !");
+    return;
+  }
+
+  // Valider les champs avant de procéder à la modification
+  this.errors = {}; // Réinitialise les erreurs
+  const isValid = this.validateFields(selectedUser);
+  
+  if (!isValid) {
+    console.log("Des erreurs de validation sont présentes :", this.errors);
+    return; // Sortir de la méthode si des erreurs sont présentes
+  }
+
+  this.crudService.editUser(selectedUser._id, selectedUser).subscribe(
+    (response: any) => {
+      console.log("Réponse API :", response); // Vérifier la réponse de l'API
+
+      const index = this.utilisateurs.findIndex(u => u._id === response.item._id);
+      if (index !== -1) {
+        this.utilisateurs[index] = response.item;
+        this.filteredUtilisateurs = [...this.utilisateurs];
+        this.errors = {};
+        this.closeModal('editModal'); // Fermer le modal d'édition
+        this.showModal('successModal', "Utilisateur modifié avec succès !");
+        this.cdr.detectChanges();
+      }
+    },
+    (error: any) => {
+      console.error("Erreur API :", error);
+      this.showModal('errorModal', "Erreur lors de la modification de l'utilisateur !");
+    }
+  );
+}
+
+clearError(field: string): void {
+  if (this.errors[field]) {
+      delete this.errors[field];
+  }
+}
+
+
   // Récupérer la liste des utilisateurs depuis l'API
   getUsers() {
     this.crudService.getUsers().subscribe(
       (data: Utilisateur[]) => {
+        console.log('Utilisateurs récupérés:', data); // Vérifiez les données récupérées
         this.utilisateurs = data;
         this.filteredUtilisateurs = [...this.utilisateurs];
       },
@@ -98,6 +179,7 @@ export class GestionUtilisateursComponent implements OnInit {
       }
     );
   }
+  
 
   onSearch() {
     if (!this.searchTerm.trim()) {
@@ -109,7 +191,8 @@ export class GestionUtilisateursComponent implements OnInit {
       user.matricule.toLowerCase().includes(searchLower) ||
       user.prenom.toLowerCase().includes(searchLower) ||
       user.nom.toLowerCase().includes(searchLower) ||
-      user.email.toLowerCase().includes(searchLower)
+      user.email.toLowerCase().includes(searchLower) ||
+      (user.telephone && user.telephone.includes(this.searchTerm.trim())) // Recherche par numéro de téléphone
     );
   }
 
@@ -136,45 +219,116 @@ export class GestionUtilisateursComponent implements OnInit {
       }
     }
     
-  // Ajout d'un utilisateur via l'API
-  addUser() {
-    if (!this.validateForm()) {
-      return; // Stopper l'exécution si le formulaire est invalide
-    }
-  
-    // Assurez-vous que les champs requis sont définis
-    this.newUser.nom = this.newUser.nom.trim();
-    this.newUser.prenom = this.newUser.prenom.trim();
-    this.newUser.email = this.newUser.email.trim().toLowerCase();
-    this.newUser.telephone = this.newUser.telephone.trim();
-  
-    // Ajouter le champ carburant et montantDû si le rôle est 'client'
-    if (this.newUser.role === 'client') {
-      if (!this.newUser.carburant) {
-        this.errors['carburant'] = "Le champ 'carburant' est requis pour les clients.";
-        return;
-      }
-      if (this.newUser.montantDu === undefined || this.newUser.montantDu < 0) {
-        this.errors['montantDu'] = "Le champ 'montant dû' doit être positif pour les clients.";
-        return;
-      }
-    }
-  
-    this.crudService.addUser(this.newUser).subscribe(
-      (user: Utilisateur) => {
-        this.utilisateurs.unshift(user);
-        this.filteredUtilisateurs = [...this.utilisateurs];
-        this.newUser = this.createEmptyUser();
-        this.errors = {}; // Réinitialiser les erreurs après un succès
-        this.closeModal('addModal');
-        this.cdr.detectChanges(); // Forcer la détection des changements
-      },
-      (error: any) => {
-        console.error("Erreur lors de l'ajout de l'utilisateur", error);
-        this.errors['apiError'] = "Erreur lors de l'ajout de l'utilisateur. Veuillez réessayer."; // Gestion des erreurs
-      }
-    );
+// Ajout d'un utilisateur via l'API
+addUser() {
+  // Réinitialiser les erreurs
+  this.errors = {};
+
+  // Nettoyer les champs
+  this.newUser.nom = this.newUser.nom.trim();
+  this.newUser.prenom = this.newUser.prenom.trim();
+  this.newUser.email = this.newUser.email.trim().toLowerCase();
+  this.newUser.telephone = this.newUser.telephone.trim();
+
+  // Validation des champs
+  const isValid = this.validateFields(this.newUser);
+  if (!isValid) {
+    this.showErrors(); // Afficher les erreurs si le formulaire est invalide
+    return; // Arrêter l'exécution si le formulaire est invalide
   }
+
+  // Validation spécifique pour les clients
+  if (this.newUser.role === 'client') {
+    const clientErrors = this.validateClientFields();
+    if (clientErrors.length > 0) {
+      clientErrors.forEach(error => {
+        this.errors[error.field] = error.message;
+      });
+      this.showErrors(); // Afficher les erreurs spécifiques aux clients
+      return; // Arrêter l'exécution si des erreurs sont trouvées
+    }
+  }
+
+  // Appel au service pour ajouter l'utilisateur
+  this.crudService.addUser(this.newUser).subscribe(
+    (user: Utilisateur) => {
+      // Option 1: Mettre à jour la liste des utilisateurs
+      this.utilisateurs.unshift(user);
+      this.filteredUtilisateurs = [...this.utilisateurs]; // Mettre à jour la liste filtrée
+      this.resetForm(); // Réinitialiser le formulaire ici
+      this.closeModal('addModal'); // Fermer la modal
+
+      // Option 2: Récupérer à nouveau tous les utilisateurs pour être sûr
+      this.getUsers(); // Récupérer à nouveau la liste des utilisateurs
+    },
+    (error: any) => {
+      console.error("Erreur lors de l'ajout de l'utilisateur", error);
+      this.handleApiError(error);
+    }
+  );
+}
+
+
+// Nouvelle méthode pour afficher les erreurs
+showErrors() {
+  // Vérifiez les champs et réaffichez les erreurs si nécessaires
+  if (!this.newUser.nom) {
+    this.errors['nom'] = 'Le nom est requis.';
+  }
+  if (!this.newUser.prenom) {
+    this.errors['prenom'] = 'Le prénom est requis.';
+  }
+  if (!this.newUser.email) {
+    this.errors['email'] = 'L\'email est requis.';
+  }
+  if (!this.newUser.telephone) {
+    this.errors['telephone'] = 'Le téléphone est requis.';
+  }
+  if (this.newUser.role === 'client') {
+    // Ajoutez d'autres validations spécifiques ici
+    if (!this.newUser.carburant) {
+      this.errors['carburant'] = 'Le carburant est requis pour les clients.';
+    }
+    if (this.newUser.montantDu === undefined || this.newUser.montantDu === null || this.newUser.montantDu < 0) {
+      this.errors['montantDu'] = 'Le montant dû doit être positif.';
+    }
+  }
+}
+
+
+
+
+// Validation des champs spécifiques aux clients
+private validateClientFields() {
+  const errors = [];
+
+  if (!this.newUser.carburant) {
+    errors.push({ field: 'carburant', message: "Le champ 'carburant' est requis pour les clients." });
+  }
+  
+  if (this.newUser.montantDu === undefined || this.newUser.montantDu < 0) {
+    errors.push({ field: 'montantDu', message: "Le champ 'montant dû' doit être positif pour les clients." });
+  }
+
+  return errors;
+}
+
+// Gestion des erreurs de l'API
+private handleApiError(error: any) {
+  if (error.error && error.error.msg) {
+    this.errors['apiError'] = error.error.msg;
+  } else {
+    this.errors['apiError'] = "Erreur lors de l'ajout de l'utilisateur. Veuillez réessayer.";
+  }
+}
+
+// Réinitialisation du formulaire
+private resetForm() {
+  this.newUser = this.createEmptyUser(); // Réinitialiser les champs
+  this.errors = {}; // Réinitialiser les erreurs
+}
+
+
   
 
 
@@ -247,35 +401,6 @@ export class GestionUtilisateursComponent implements OnInit {
 }
 
 
-editUser(selectedUser: Utilisateur | null) {
-  console.log("Bouton Modifier cliqué", selectedUser); // Vérifier si la fonction est appelée
-
-  if (!selectedUser) {
-      console.warn("Utilisateur sélectionné introuvable !");
-      return;
-  }
-
-  this.crudService.editUser(selectedUser._id, selectedUser).subscribe(
-    (response: any) => {
-      console.log("Réponse API :", response); // Vérifier la réponse de l'API
-
-      const index = this.utilisateurs.findIndex(u => u._id === response.item._id);
-      if (index !== -1) {
-        this.utilisateurs[index] = response.item;
-        this.filteredUtilisateurs = [...this.utilisateurs];
-        this.errors = {};
-        this.closeModal('editModal'); // Fermer le modal d'édition
-        this.showModal('successModal', "Utilisateur modifié avec succès !");
-        this.cdr.detectChanges();
-      }
-    },
-    (error: any) => {
-      console.error("Erreur API :", error);
-      this.showModal('errorModal', "Erreur lors de la modification de l'utilisateur !");
-    }
-  );
-}
-
 deleteUser(user: Utilisateur) {
   if (!user || !user._id) {
     console.warn("Utilisateur invalide ou ID manquant !");
@@ -291,7 +416,6 @@ deleteUser(user: Utilisateur) {
       this.filteredUtilisateurs = [...this.utilisateurs];
 
       this.closeModal('deleteModal');
-      this.showModal('successModal', "Utilisateur supprimé avec succès !");
     },
     (error) => {
       console.error("Erreur lors de la suppression de l'utilisateur", error);

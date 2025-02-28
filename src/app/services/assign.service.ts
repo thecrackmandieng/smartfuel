@@ -1,35 +1,37 @@
 import { Injectable } from '@angular/core';
 import { Observable, Subject } from 'rxjs';
 
+
 @Injectable({
   providedIn: 'root'
 })
-export class RfidService {
+export class AssignService {
   private socket: WebSocket;
-  private errorSubject: Subject<string> = new Subject<string>(); // Sujet pour émettre les erreurs
+  private errorSubject: Subject<string> = new Subject<string>(); // Sujet pour émettre les erreursles messages reçus
 
   constructor() {
-    this.socket = new WebSocket('ws://localhost:8080'); // Connexion WebSocket
-
+    this.socket = new WebSocket('ws://localhost:8081'); // Connexion WebSocket
     this.socket.onopen = () => {
       console.log('🟢 WebSocket connecté');
     };
 
     this.socket.onerror = (error) => {
       console.error('❌ Erreur WebSocket', error);
-      this.errorSubject.next('Erreur WebSocket'); // Émettre l'erreur sans fermer l'Observable
+      this.errorSubject.next('Erreur WebSocket'); // Émettre l'erreur
     };
 
     this.socket.onclose = () => {
       console.log('🔴 WebSocket fermé');
     };
-  }
 
-  /**
+  }
+  
+
+   /**
    * Écoute les messages WebSocket et retourne un Observable avec les données utilisateur
    * @returns Observable contenant le nom et le rôle de l'utilisateur
    */
-  listenForScan(): Observable<{ nom: string, role: string }> {
+   listenForScan(): Observable<{ nom: string, role: string }> {
     return new Observable(observer => {
       this.socket.onmessage = (event) => {
         console.log('📩 Données reçues du WebSocket:', event.data);
@@ -43,18 +45,15 @@ export class RfidService {
               role: data.user.role
             });
           } else {
-            console.warn("⚠️ Carte invalide scannée");
-            observer.next({ nom: 'Inconnu', role: 'Erreur' }); // Émission d'une valeur d'erreur sans fermer l'Observable
+            observer.error('Utilisateur non trouvé');
           }
         } catch (error) {
-          console.error('❌ Erreur de parsing des données');
-          observer.next({ nom: 'Inconnu', role: 'Erreur' }); // Empêcher l'arrêt de l'Observable
+          observer.error('❌ Erreur de parsing des données');
         }
       };
 
       this.socket.onerror = (error) => {
-        console.error('❌ Erreur WebSocket pour rfid');
-        observer.next({ nom: 'Inconnu', role: 'Erreur' }); // Continuer l'écoute
+        observer.error('❌ Erreur WebSocket pour rfid');
       };
 
       this.socket.onclose = () => {

@@ -43,11 +43,8 @@ authenticate(credentials: { codeSecret: string }): Observable<any> {
 
 
   // Méthode pour récupérer le rôle de l'utilisateur
-  getUserRole(): string {
-    if (typeof window !== 'undefined') {
-      return localStorage.getItem('userRole') || '';
-    }
-    return ''; // Renvoie une chaîne vide si on n'est pas dans le navigateur
+ getUserRole(): string | null {
+    return localStorage.getItem('userRole'); // ✅ Récupère le rôle stocké
   }
   
 
@@ -73,6 +70,7 @@ authenticate(credentials: { codeSecret: string }): Observable<any> {
     const isAuth = userRole !== ''; // Vérifie si le rôle n'est pas vide
     console.log('Vérification de l\'authentification, rôle présent:', userRole);
     console.log('AuthGuard - Utilisateur authentifié:', isAuth);
+    return this.getUserRole() !== null; // Renvoie true si le rôle est présent, sinon false
     return isAuth; // Renvoie true si le rôle est présent, sinon false
   }
 }

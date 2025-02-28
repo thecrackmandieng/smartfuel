@@ -3,7 +3,7 @@ import { Router } from '@angular/router';
 import { AuthService } from '../../services/auth.service';
 import { FormsModule } from '@angular/forms';
 import { CommonModule } from '@angular/common';
-import { RfidService } from '../../services/rfid.service'; // Import du service
+import { RfidService } from '../../services/rfid.service';
 
 @Component({
   selector: 'app-login',
@@ -15,7 +15,6 @@ import { RfidService } from '../../services/rfid.service'; // Import du service
 export class LoginComponent implements AfterViewInit {
   @ViewChild('input1') input1!: ElementRef;
 
-  // Typage des credentials pour accepter uniquement les clés 'code1', 'code2', 'code3', 'code4'
   credentials: { [key in 'code1' | 'code2' | 'code3' | 'code4']: string } = {
     code1: '',
     code2: '',
@@ -28,64 +27,53 @@ export class LoginComponent implements AfterViewInit {
   isLocked = false;
   lockTimeLeft = 15;
   progress = 100;
-  showErrorModal: boolean = false;
 
   constructor(private authService: AuthService, private router: Router, private rfidService: RfidService) {}
 
   ngAfterViewInit(): void {
-    this.input1.nativeElement.focus(); // Focus initial sur le premier champ
-     // Écouter les scans RFID et afficher les informations de l'utilisateur
-       
-  // Écouter les scans RFID et afficher les informations de l'utilisateur
-  this.rfidService.listenForScan().subscribe(
-    (user) => {
-      console.log('🆔 Utilisateur détecté via RFID:', user);
-      console.log(`Utilisateur détecté: ${user.nom} - Rôle: ${user.role}`);
+    this.input1.nativeElement.focus();
 
-      if (user.role === 'admin') {
-        this.router.navigate(['admin/dashboaradmin']); // Rediriger vers la page admin/dashboardadmin
-      } else {
-        console.log('Accès refusé : utilisateur non admin.');
-        this.showError('Accès refusé : utilisateur non admin.'); // Afficher le message d'erreur
-      }
-    },
-    (error) => {
-      console.error('Erreur lors de la lecture RFID:', error);
-      this.showError('Erreur lors de la lecture RFID.'); // Afficher un message d'erreur générique
-    }
-  );
+    this.rfidService.listenForScan().subscribe(
+        (user) => {
+            console.log(`Utilisateur détecté: ${user.nom} - Rôle: ${user.role}`);
 
-  // Corriger la gestion des erreurs
-  this.rfidService.listenForErrors().subscribe(
-    (errorMessage: string) => { // Changez ici pour recevoir une chaîne de caractères
-      this.showError(errorMessage); // Afficher le message d'erreur reçu
-    }
-  );
-  }
+            // Vérifiez si localStorage est disponible avant de l'utiliser
+            if (typeof localStorage !== 'undefined') {
+                localStorage.setItem('userRole', user.role);
+            } else {
+                console.error('localStorage n\'est pas disponible dans cet environnement.');
+            }
 
-  // Fonction pour afficher le modal d'erreur
-  showError(message: string) {
-    this.errorMessage = message;
-    this.showErrorModal = true;
-  }
+            if (user.role === 'admin') {
+                this.router.navigate(['admin/dashboard']);
+            } else {
+                console.log(`Accès refusé : vous n'êtes pas admin.`);
+                this.showError('Accès refusé : utilisateur non admin.');
+            }
 
-  // Fonction pour fermer le modal
-  closeModal() {
-    this.showErrorModal = false;
-    this.errorMessage = ''; // Réinitialise le message d'erreur
-  }
+            this.incorrectAttempts = 0;
+        },
+        (error) => {
+            console.error('Erreur lors de la lecture RFID:', error);
+            this.showError('Erreur lors de la lecture RFID.');
+        }
+    );
 
-  // Changement de typage pour 'controlName' afin qu'il soit l'une des clés de credentials
+    this.rfidService.listenForErrors().subscribe(
+        (errorMessage: string) => {
+            this.showError(errorMessage);
+        }
+    );
+}
+
   onInputChange(event: any, controlName: 'code1' | 'code2' | 'code3' | 'code4', nextInput: any): void {
     const input = event.target;
     const value = input.value;
 
-    // Si la longueur de la valeur est 1, mettre à jour la valeur correspondante
     if (value.length === 1) {
-      this.credentials[controlName] = value; // Mettre à jour credentials avec la valeur entrée
+      this.credentials[controlName] = value;
     }
 
-    // Si une autre entrée existe, passer au champ suivant
     if (nextInput) {
       nextInput.focus();
     }
@@ -96,22 +84,19 @@ export class LoginComponent implements AfterViewInit {
   filterInput(event: KeyboardEvent, controlName: string, input: any, prevInput: any): void {
     const allowedKeys = ['Backspace', 'ArrowLeft', 'ArrowRight', 'Tab'];
 
-    // Ne permettre que les chiffres ou certaines touches comme backspace
     if (!allowedKeys.includes(event.key) && !/^[0-9]$/.test(event.key)) {
       event.preventDefault();
     } else if (event.key === 'Backspace' && input.value === '' && prevInput) {
-      // Si backspace et champ vide, revenir au champ précédent
       prevInput.focus();
     }
   }
 
   showTemporaryValue(input: any): void {
-    input.select(); // Sélectionner la valeur pour une édition facile
+    input.select();
   }
 
   checkAndSubmit(): void {
     const code = this.credentials.code1 + this.credentials.code2 + this.credentials.code3 + this.credentials.code4;
-    // Si tous les champs sont remplis, soumettre le formulaire
     if (code.length === 4) {
       this.onSubmit();
     }
@@ -120,47 +105,53 @@ export class LoginComponent implements AfterViewInit {
   onSubmit(): void {
     const code = this.credentials.code1 + this.credentials.code2 + this.credentials.code3 + this.credentials.code4;
 
-    console.log('Code envoyé:', code);  // Vérification
-
     if (code) {
         this.authService.authenticate({ codeSecret: code }).subscribe(
             (response) => {
-                console.log('Réponse API:', response);  // Vérification de la réponse
-
                 if (response.msg === 'Connexion réussie') {
-                    // Vérifiez le rôle dans la réponse
-                    const role = response.role; // Assurez-vous que la réponse inclut le rôle
+                    const role = response.role;
+                    const token = response.token;
+
+                    if (typeof localStorage !== 'undefined') {
+                        localStorage.setItem('token', token);
+                        localStorage.setItem('userRole', role);
+                    } else {
+                        console.error('localStorage n\'est pas disponible dans cet environnement.');
+                    }
+
                     if (role === "admin") {
                         setTimeout(() => {
-                            this.router.navigate(['/admin/dashboard']); // Redirection vers la page admin/dashboard
+                            this.router.navigate(['/admin/dashboard']);
                         }, 100);
                     } else if (role === "pompiste") {
-                        console.log('Redirection vers /admin/pompiste'); // Vérification
                         setTimeout(() => {
-                            this.router.navigate(['pompiste/dashboard']); // Redirection vers la page admin/pompiste
+                            this.router.navigate(['/pompiste/dashboard']);
                         }, 100);
                     } else if (role === "client") {
-                        console.log('Redirection vers /client/dashboard'); // Vérification
                         setTimeout(() => {
-                            this.router.navigate(['/client/dashboard']); // Redirection vers la page client/dashboard
+                            this.router.navigate(['/client/dashboard']);
                         }, 100);
                     } else {
-                        // Gérer d'autres rôles si nécessaire
                         this.errorMessage = 'Accès non autorisé pour ce rôle';
                     }
+
+                    this.incorrectAttempts = 0;
                 } else {
                     this.handleIncorrectAttempt();
                     this.errorMessage = 'Code incorrect';
                 }
             },
             (error) => {
-                console.error('Erreur lors de l\'authentification:', error);
-                this.errorMessage = 'Erreur lors de la connexion. Veuillez réessayer.';
+                console.error('Erreur API:', error);
+                this.handleIncorrectAttempt();
+                this.errorMessage = 'Erreur de connexion';
             }
         );
+    } else {
+        this.clearInputs();
+        this.errorMessage = 'Veuillez entrer un code';
     }
 }
-
 
   handleIncorrectAttempt(): void {
     this.incorrectAttempts++;
@@ -181,18 +172,23 @@ export class LoginComponent implements AfterViewInit {
       if (this.lockTimeLeft <= 0) {
         clearInterval(interval);
         this.isLocked = false;
-        this.errorMessage = null; // Réinitialiser le message d'erreur
+        this.errorMessage = null;
         this.clearInputs();
       }
-    }, 1000); // 1 seconde
+    }, 1000);
+  }
+
+  showError(message: string): void {
+    this.errorMessage = message;
+    setTimeout(() => {
+      this.errorMessage = null;
+    }, 5000);
   }
 
   clearInputs(): void {
     this.credentials = { code1: '', code2: '', code3: '', code4: '' };
-    // Vérifiez si input1 est défini avant de l'utiliser
     if (this.input1 && this.input1.nativeElement) {
-      this.input1.nativeElement.focus(); // Revenir au premier champ si pas verrouillé
+      this.input1.nativeElement.focus();
     }
   }
-  
 }

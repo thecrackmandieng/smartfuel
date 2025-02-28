@@ -331,6 +331,10 @@ cursor: not-allowed;
 .btn-action.delete:disabled {
 background-color: #e5e7eb;
 }
+
+.error {
+  color: #f51b0b; /* Couleur pour le bouton de blocage */
+  }
 /* Responsive */
 @media (max-width: 1024px) {
   .sidebar {

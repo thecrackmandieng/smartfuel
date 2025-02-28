@@ -20,6 +20,7 @@ export class GestionPompesComponent implements OnInit {
   newPump: Pompe = this.createEmptyPump();
   selectedPump: Pompe | null = null;
   showSuccessModal: boolean = false;
+  isSubmitted: boolean = false; // Gestion des erreurs après soumission
 
   constructor(private pompeService: PompeService) {}
 
@@ -59,12 +60,19 @@ export class GestionPompesComponent implements OnInit {
   }
 
   addPump() {
+    this.isSubmitted = true; // Active la validation des erreurs
+
+    if (!this.newPump.typeCarburant || !this.newPump.prix || this.newPump.prix < 1) {
+      return; // Stop si le formulaire est invalide
+    }
+
     this.pompeService.addPompe(this.newPump).subscribe({
       next: (response) => {
         const createdPompe = response.pompe;
         this.pompes.unshift(createdPompe);
         this.filteredPompes = [...this.pompes];
         this.newPump = this.createEmptyPump();
+        this.isSubmitted = false; // Réinitialise la validation après ajout
         this.closeModal('addModal');
         this.showSuccess();
       },
@@ -119,12 +127,14 @@ export class GestionPompesComponent implements OnInit {
       modal.style.display = 'none';
     }
     this.selectedPump = null;
+    this.isSubmitted = false; // Réinitialise la validation lors de la fermeture
   }
 
   showSuccess() {
     this.showSuccessModal = true;
     setTimeout(() => this.showSuccessModal = false, 3000);
   }
+
   deleteSelected() {
     const selectedIds = this.pompes
        .filter(p => p.selected && p._id)
@@ -140,14 +150,20 @@ export class GestionPompesComponent implements OnInit {
           error: (err) => console.error('Erreur lors de la suppression multiple', err)
        });
     }
- }
- 
- confirmDeletePump() {
+  }
+
+  openConfirmDeleteModal(pompe: Pompe) {
+    this.selectedPump = pompe;
+    this.openModal('deleteModal');
+  }
+
+  confirmDeletePump() {
     if (this.selectedPump) {
-       this.deletePump(this.selectedPump);
+      this.deletePump(this.selectedPump);
+      this.closeModal('deleteModal');
     }
- }
- 
+  }
+
   private createEmptyPump(): Pompe {
     return {
       type: '',

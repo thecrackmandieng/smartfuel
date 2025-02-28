@@ -121,39 +121,45 @@
   <div class="modal-content">
     <span class="close" (click)="closeModal('addModal')">&times;</span>
     <h2><i class="fas fa-user-plus"></i> Ajouter un Utilisateur</h2>
-    
+
     <form (ngSubmit)="addUser()" #userForm="ngForm">
+      <div *ngIf="errors['apiError']" class="error">{{ errors['apiError'] }}</div>
+
       <div class="form-group">
         <label>Prenom :</label>
-        <input type="text" [(ngModel)]="newUser.prenom" name="prenom" class="input-field" required>
+        <input type="text" [(ngModel)]="newUser.prenom" name="prenom" class="input-field" required
+               (input)="clearError('prenom')">
         <div *ngIf="errors['prenom']" class="error">{{ errors['prenom'] }}</div>
       </div>
 
       <div class="form-group">
         <label>Nom :</label>
-        <input type="text" [(ngModel)]="newUser.nom" name="nom" class="input-field" required>
+        <input type="text" [(ngModel)]="newUser.nom" name="nom" class="input-field" required
+               (input)="clearError('nom')">
         <div *ngIf="errors['nom']" class="error">{{ errors['nom'] }}</div>
       </div>
 
       <div class="form-group">
         <label>Email :</label>
-        <input type="email" [(ngModel)]="newUser.email" name="email" class="input-field" required>
+        <input type="email" [(ngModel)]="newUser.email" name="email" class="input-field" required
+               (input)="clearError('email')">
         <div *ngIf="errors['email']" class="error">{{ errors['email'] }}</div>
       </div>
 
       <div class="form-group">
         <label>Téléphone :</label>
-        <input type="text" [(ngModel)]="newUser.telephone" name="telephone" class="input-field" required>
+        <input type="text" [(ngModel)]="newUser.telephone" name="telephone" class="input-field" required
+               (input)="clearError('telephone')">
         <div *ngIf="errors['telephone']" class="error">{{ errors['telephone'] }}</div>
       </div>
 
       <div class="form-group">
         <label>Rôle :</label>
-        <select [(ngModel)]="newUser.role" name="role" (change)="onRoleChange()" class="select-field" required>
+        <select [(ngModel)]="newUser.role" name="role" (change)="onRoleChange(); clearError('role')" class="select-field" required>
           <option value="" disabled selected>Sélectionnez un rôle</option>
-          <option value="admin">admin</option>
-          <option value="client">client</option>
-          <option value="pompiste">pompiste</option>
+          <option value="admin">Admin</option>
+          <option value="client">Client</option>
+          <option value="pompiste">Pompiste</option>
         </select>
         <div *ngIf="errors['role']" class="error">{{ errors['role'] }}</div>
       </div>
@@ -173,15 +179,13 @@
       <div class="form-group" *ngIf="newUser.role === 'client'">
         <label>Montant Dû :</label>
         <input type="number" [(ngModel)]="newUser.montantDu" name="montantDu" class="input-field" min="0" required>
-        <div *ngIf="errors['montantDû']" class="error">{{ errors['montantDû'] }}</div>
+        <div *ngIf="errors['montantDu']" class="error">{{ errors['montantDu'] }}</div>
       </div>
 
       <button type="submit" class="btn btn-add">Ajouter</button>
     </form>
   </div>
 </div>
-
-
 
 
 <!-- MODAL D'ÉDITION DE L'UTILISATEUR -->
@@ -193,23 +197,48 @@
     <input *ngIf="selectedUser" type="text" [(ngModel)]="selectedUser.matricule" disabled class="input-field">
 
     <label>Prénom :</label>
-    <input *ngIf="selectedUser" type="text" [(ngModel)]="selectedUser.prenom" class="input-field">
+    <input 
+      *ngIf="selectedUser" 
+      type="text" 
+      [(ngModel)]="selectedUser.prenom" 
+      (ngModelChange)="validateFields(selectedUser)" 
+      class="input-field">
     <div *ngIf="errors['prenom']" class="error">{{ errors['prenom'] }}</div>
 
     <label>Nom :</label>
-    <input *ngIf="selectedUser" type="text" [(ngModel)]="selectedUser.nom" class="input-field">
+    <input 
+      *ngIf="selectedUser" 
+      type="text" 
+      [(ngModel)]="selectedUser.nom" 
+      (ngModelChange)="validateFields(selectedUser)" 
+      class="input-field">
     <div *ngIf="errors['nom']" class="error">{{ errors['nom'] }}</div>
 
     <label>Email :</label>
-    <input *ngIf="selectedUser" type="email" [(ngModel)]="selectedUser.email" class="input-field">
+    <input 
+      *ngIf="selectedUser" 
+      type="email" 
+      [(ngModel)]="selectedUser.email" 
+      (ngModelChange)="validateFields(selectedUser)" 
+      class="input-field">
     <div *ngIf="errors['email']" class="error">{{ errors['email'] }}</div>
 
     <label>Téléphone :</label>
-    <input *ngIf="selectedUser" type="text" [(ngModel)]="selectedUser.telephone" class="input-field">
+    <input 
+      *ngIf="selectedUser" 
+      type="text" 
+      [(ngModel)]="selectedUser.telephone" 
+      (ngModelChange)="validateFields(selectedUser)" 
+      class="input-field">
     <div *ngIf="errors['telephone']" class="error">{{ errors['telephone'] }}</div>
 
     <label>Rôle :</label>
-    <select *ngIf="selectedUser" [(ngModel)]="selectedUser.role" class="select-field">
+    <select 
+      *ngIf="selectedUser" 
+      [(ngModel)]="selectedUser.role" 
+      (ngModelChange)="validateFields(selectedUser)" 
+      class="select-field">
+        <option value="">Sélectionner un rôle</option>
         <option value="admin">Admin</option>
         <option value="client">Client</option>
         <option value="pompiste">Pompiste</option>

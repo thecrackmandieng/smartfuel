@@ -9,17 +9,21 @@
   flex-direction: column;
   justify-content: space-between;
   border-radius: 30px;
+  transition: all 0.3s ease; /* Ajouter une transition pour une meilleure expérience utilisateur */
 }
+
 .sidebar ul {
   list-style-type: none;
   padding: 0;
   flex-grow: 1;
 }
+
 .sidebar li {
   margin-bottom: 20px;
   display: flex;
   align-items: center;
 }
+
 .sidebar a {
   text-decoration: none;
   color: white;
@@ -31,30 +35,71 @@
   width: calc(100% + 40px); /* Prendre tout l'espace à droite et sortir de la barre latérale */
   margin-right: -30px; /* Ajuster la marge pour sortir de la barre latérale */
 }
+
 .sidebar a:hover:not(.logout a),
 .sidebar a.active:not(.logout a) {
   background-color: white;
   color: black;
   border-radius: 20px;
 }
+
 .icon {
   font-size: 30px;
   margin-right: 10px;
   margin-top: 5px; /* Ajouter une marge supérieure pour descendre les icônes */
 }
+
 .logout .icon {
   font-size: 40px; /* Augmenter la taille de l'icône du logout */
 }
+
 .smartfuel .icon {
   font-size: 40px; /* Augmenter la taille de l'icône du smartfuel */
 }
+
 .logout {
   margin-top: auto;
   display: flex;
   align-items: center;
 }
+
 .smartfuel-text {
   font-weight: bold; /* Mettre le texte en gras */
   font-size: 20px; /* Agrandir un peu le texte */
   margin-top: -15px;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .sidebar {
+    width: 100%;
+    height: auto;
+    flex-direction: row;
+    justify-content: space-around;
+    padding: 10px 0;
+    border-radius: 0;
+  }
+
+  .sidebar ul {
+    flex-direction: row;
+    justify-content: space-around;
+    width: 100%;
+  }
+
+  .sidebar li {
+    margin-bottom: 0;
+    flex: 1;
+    text-align: center;
+  }
+
+  .sidebar a {
+    width: auto;
+    margin-right: 0;
+    padding: 10px 20px;
+    border-radius: 20px;
+  }
+
+  .logout {
+    margin-top: 0;
+  }
 }

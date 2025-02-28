@@ -5,6 +5,12 @@
   background-color: white;
 }
 
+.error {
+  color: red; /* Couleur rouge pour les messages d'erreur */
+  font-size: 0.9em; /* Taille de police plus petite */
+  margin-top: 4px; /* Espace au-dessus des messages d'erreur */
+}
+
 
 .main-content {
   flex: 1;
