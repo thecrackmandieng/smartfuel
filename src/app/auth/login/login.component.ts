@@ -141,7 +141,7 @@ export class LoginComponent implements AfterViewInit, OnDestroy {
           console.log('Réponse API:', response);
 
           if (response.msg === 'Connexion réussie') {
-            const role = response.role;
+            const role = this.authService.getUserRole();
             if (role === "admin") {
               setTimeout(() => {
                 this.router.navigate(['/admin/dashboard']);
@@ -171,7 +171,6 @@ export class LoginComponent implements AfterViewInit, OnDestroy {
       );
     }
   }
-
   handleIncorrectAttempt(): void {
     this.incorrectAttempts++;
     if (this.incorrectAttempts >= 3) {
