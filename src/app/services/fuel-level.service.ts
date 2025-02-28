@@ -1,24 +1,24 @@
 import { Injectable } from '@angular/core';
-import { io } from 'socket.io-client';
 import { Observable } from 'rxjs';
+import { io, Socket } from 'socket.io-client';
 
 @Injectable({
   providedIn: 'root'
 })
 export class FuelLevelService {
-  private socket = io('http://localhost:5000'); // Assurez-vous que le backend tourne sur ce port
+  private socket: Socket;
 
-  constructor() {}
+  constructor() {
+    this.socket = io('http://localhost:5000', {
+      withCredentials: true
+    });
+  }
 
-  getFuelLevels(): Observable<{ essence: number, gazole: number }> {
+  getFuelLevels(): Observable<{ essence: number; gazole: number }> {
     return new Observable(observer => {
       this.socket.on('fuelUpdate', (data) => {
         observer.next(data);
       });
-
-      return () => {
-        this.socket.disconnect();
-      };
     });
   }
 }

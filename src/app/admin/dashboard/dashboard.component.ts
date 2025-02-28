@@ -3,7 +3,7 @@ import { CommonModule } from '@angular/common';
 import { SidebarComponent } from '../../sidebar/sidebar.component';
 import { Chart, registerables } from 'chart.js';
 import { isPlatformBrowser } from '@angular/common';
-import { FuelLevelService } from './../../services/fuel-level.service'; // Assurez-vous que le chemin est correct
+import { FuelLevelService } from './../../services/fuel-level.service';
 
 @Component({
   selector: 'app-dashboard',
@@ -21,13 +21,12 @@ export class AdminDashboardComponent implements AfterViewInit {
 
   constructor(
     @Inject(PLATFORM_ID) private platformId: Object,
-    private fuelLevelService: FuelLevelService // Injectez le service
+    private fuelLevelService: FuelLevelService
   ) {}
 
   ngOnInit() {
     this.isBrowser = isPlatformBrowser(this.platformId);
     this.fetchFuelLevels();
-    setInterval(() => this.fetchFuelLevels(), 5000); // Mettre à jour toutes les 5 secondes
   }
 
   ngAfterViewInit() {
@@ -110,6 +109,7 @@ export class AdminDashboardComponent implements AfterViewInit {
     this.fuelLevelService.getFuelLevels().subscribe((data) => {
       this.essenceLevel = data.essence;
       this.gazoleLevel = data.gazole;
+      console.log('Niveaux de carburant mis à jour:', data);
     });
   }
 }
