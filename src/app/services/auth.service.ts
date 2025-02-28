@@ -46,6 +46,10 @@ authenticate(credentials: { codeSecret: string }): Observable<any> {
  getUserRole(): string | null {
     return localStorage.getItem('userRole'); // ✅ Récupère le rôle stocké
   }
+
+  getUserId(): string {
+    return localStorage.getItem('userId') || '';
+  }
   
 
   // Méthode pour la déconnexion

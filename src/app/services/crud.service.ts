@@ -64,4 +64,16 @@ export class CrudService {
   bloquerActions(userId: string): Observable<any> {
     return this.http.put(`${this.baseUrl}/${userId}/bloquer-actions`, {});
   }
+
+ // Méthode pour récupérer le solde de l'utilisateur
+ getUserBalance(userId: string): Observable<any> {
+  return this.http.get(`${this.baseUrl}/user/${userId}/balance`);
+}
+
+// Méthode pour acheter du carburant
+acheterCarburant(userId: string, carburant: string, litresAchetes?: number, montant?: number): Observable<any> {
+  const body = { carburant, litresAchetes, montant };
+  return this.http.post(`${this.baseUrl}/acheterCarburant/${userId}`, body);
+}
+  
 }
