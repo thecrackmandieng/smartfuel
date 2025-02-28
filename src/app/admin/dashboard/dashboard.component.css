@@ -150,6 +150,7 @@
   margin-right: 20px; /* Ajustez la marge selon vos besoins */
   margin-bottom: 20px; /* Ajouter une marge en bas pour espacer des cartes */
 }
+
 /* Media queries pour les petits écrans */
 @media (max-width: 768px) {
   .pump-card, .reservoir-card {
@@ -177,6 +178,7 @@
     margin-left: 100px; /* Ajustez la marge gauche pour espacer du bord */
   }
 }
+
 /* Media queries pour les petits écrans */
 @media (max-width: 768px) {
   .dashboard-layout {

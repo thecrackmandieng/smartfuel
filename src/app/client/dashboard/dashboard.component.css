@@ -8,6 +8,13 @@ body, html {
   height: 100%;
 }
 
+.dashboard-layout {
+  background: linear-gradient(to bottom, #2bb3e0, black);
+  background-size: cover;
+  padding-top: 60px;
+  padding-bottom: 50px;
+}
+
 .overlay-card {
   width: 75%; /* Adjust the width as needed */
   margin: 0 auto; /* Center the card horizontally */
@@ -27,6 +34,8 @@ body, html {
   position: relative;
   border-radius: 25px; /* Adjust the border radius as needed */
   overflow: hidden; /* Ensure content does not overflow the card */
+  background-color: rgba(43, 179, 224, 0.5); /* Add a semi-transparent overlay */
+  backdrop-filter: blur(5px); /* Apply a blur effect to the background */
 }
 
 .header {
@@ -55,7 +64,9 @@ body, html {
   background: transparent;
   border: none;
   cursor: pointer;
-  margin-left: 1220px;
+  position: absolute; /* Positionnement absolu */
+  top: 10px; /* Ajustez la distance par rapport au haut */
+  right: 10px; /* Ajustez la distance par rapport à la droite */
 }
 
 .fuel-options {
@@ -111,7 +122,6 @@ body, html {
 #fuel-select:hover, #fuel-btn:hover {
   box-shadow: 0 6px 8px rgba(0, 0, 0, 0.2);
 }
-
 
 .fuel-title {
   font-size: 12px; /* Adjust the size as needed */
@@ -312,16 +322,4 @@ button:hover {
   .cancel-btn, .validate-btn {
     width: 100%;
   }
-}
-
-.power-btn {
-  position: absolute; /* Positionnement absolu */
-  top: 10px; /* Ajustez la distance par rapport au haut */
-  right: 10px; /* Ajustez la distance par rapport à la droite */
-  font-size: 2rem;
-  color: red;
-  background: transparent;
-  border: none;
-  cursor: pointer;
-  margin-left: 0; /* Pour enlever toute marge à gauche si nécessaire */
 }

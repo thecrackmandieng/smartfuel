@@ -5,7 +5,12 @@ body, html {
   font-family: Arial, sans-serif;
   height: 100%;
 }
-
+.dashboard-container {
+  background: linear-gradient(to bottom, #2bb3e0, black);
+  background-size: cover;
+  padding-top: 60px;
+  padding-bottom: 50px;
+}
 .overlay-card {
   width: 75%; /* Ajustez la largeur selon vos besoins */
   margin: 0 auto; /* Centrer la carte horizontalement */

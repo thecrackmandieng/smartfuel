@@ -7,10 +7,10 @@
         <h3 class="text-large"><i class="fas fa-tint icon-large"></i> RÉSERVOIRE</h3>
         <div class="card-content">
           <div class="fuel-info">
-            <p class="text-large" style="color: green;"><i class="fas fa-gas-pump icon-large"></i> DIESEL: 75%</p>
+            <p class="text-large" style="color: green;"><i class="fas fa-gas-pump icon-large"></i> DIESEL: {{ essenceLevel }}%</p>
           </div>
           <div class="fuel-info">
-            <p class="text-large" style="color: brown;"><i class="fas fa-gas-pump icon-large"></i> GAZOIL: 85%</p>
+            <p class="text-large" style="color: brown;"><i class="fas fa-gas-pump icon-large"></i> GAZOIL: {{ gazoleLevel }}%</p>
           </div>
         </div>
       </div>
@@ -30,6 +30,7 @@
     </div>
     <div class="card chart-card">
       <h3 class="text-large">Volume vendu (%)</h3>
-      <canvas #salesChart width="370" height="90"></canvas>    </div>
+      <canvas #salesChart width="370" height="90"></canvas>
+    </div>
   </div>
 </div>

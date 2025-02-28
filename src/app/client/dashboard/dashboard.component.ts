@@ -35,18 +35,17 @@ export class ClientDashboardComponent implements OnInit {
   ngOnInit(): void {
     this.isLoggedIn = this.authService.isAuthenticated();
     const userId = this.authService.getUserId();
-    console.log('User ID:', userId); // Vérifiez l'ID de l'utilisateur
     if (userId) {
       this.getUserBalance(userId);
     }
 
-    const fuelBtn = this.el.nativeElement.querySelector('#fuel-btn');
+    const fuelBtn = this.el.nativeElement.querySelector('#fuel-btn') as HTMLElement;
     const selectElement = this.el.nativeElement.querySelector('#fuel-select') as HTMLSelectElement;
-    const inputFields = this.el.nativeElement.querySelector('#input-fields');
-    const amountInput = this.el.nativeElement.querySelector('#amount');
-    const volumeInput = this.el.nativeElement.querySelector('#volume');
-    const validateBtn = this.el.nativeElement.querySelector('#validate-btn');
-    const cancelBtn = this.el.nativeElement.querySelector('#cancel-btn');
+    const inputFields = this.el.nativeElement.querySelector('#input-fields') as HTMLElement;
+    const amountInput = this.el.nativeElement.querySelector('#amount') as HTMLInputElement;
+    const volumeInput = this.el.nativeElement.querySelector('#volume') as HTMLInputElement;
+    const validateBtn = this.el.nativeElement.querySelector('#validate-btn') as HTMLElement;
+    const cancelBtn = this.el.nativeElement.querySelector('#cancel-btn') as HTMLElement;
 
     if (fuelBtn && selectElement && inputFields && amountInput && volumeInput && validateBtn && cancelBtn) {
       this.updateFuelDisplay(fuelBtn, selectElement);
@@ -120,7 +119,7 @@ export class ClientDashboardComponent implements OnInit {
   toggleFuelSelection(selectElement: HTMLSelectElement): void {
     this.selectedFuelType = selectElement.value as 'diesel' | 'gazoil' | 'huile' | 'autre';
     this.updateFuelDisplay(this.el.nativeElement.querySelector('#fuel-btn') as HTMLElement, selectElement);
-    this.renderer.setStyle(this.el.nativeElement.querySelector('#input-fields'), 'display', 'flex');
+    this.renderer.setStyle(this.el.nativeElement.querySelector('#input-fields') as HTMLElement, 'display', 'flex');
   }
 
   updateFuelDisplay(fuelBtn: HTMLElement, selectElement: HTMLSelectElement): void {
@@ -161,10 +160,8 @@ export class ClientDashboardComponent implements OnInit {
   }
 
   getUserBalance(userId: string): void {
-    console.log('Fetching balance for user ID:', userId);
     this.crudService.getUserBalance(userId).subscribe(
       (response) => {
-        console.log('Balance fetched:', response);
         this.soldeCompte = response.solde; // Mettez à jour le solde localement
       },
       (error) => {
@@ -173,18 +170,20 @@ export class ClientDashboardComponent implements OnInit {
       }
     );
   }
+
   acheterCarburant(amount: number, volume: number): void {
     const userId = this.authService.getUserId(); // Récupérez l'ID de l'utilisateur connecté
     console.log('User ID:', userId);
     console.log('Carburant:', this.selectedFuelType);
     console.log('Montant:', amount);
     console.log('Volume:', volume);
-  
+
     this.crudService.acheterCarburant(userId, this.selectedFuelType, volume, amount).subscribe(
       (response) => {
         console.log('Achat réussi:', response);
         this.getUserBalance(userId); // Récupérez le nouveau solde après l'achat
         this.resetFormAfterPurchase();
+        this.startDecrement(amount, volume, this.el.nativeElement.querySelector('#amount') as HTMLInputElement, this.el.nativeElement.querySelector('#volume') as HTMLInputElement, this.el.nativeElement.querySelector('#input-fields') as HTMLElement, this.el.nativeElement.querySelector('#fuel-btn') as HTMLElement, this.el.nativeElement.querySelector('#fuel-select') as HTMLSelectElement);
       },
       (error) => {
         console.error('Erreur lors de l\'achat:', error);
@@ -192,17 +191,16 @@ export class ClientDashboardComponent implements OnInit {
       }
     );
   }
-  
+
   resetFormAfterPurchase(): void {
-    const amountInput = this.el.nativeElement.querySelector('#amount');
-    const volumeInput = this.el.nativeElement.querySelector('#volume');
-    const inputFields = this.el.nativeElement.querySelector('#input-fields');
-    const fuelBtn = this.el.nativeElement.querySelector('#fuel-btn');
+    const amountInput = this.el.nativeElement.querySelector('#amount') as HTMLInputElement;
+    const volumeInput = this.el.nativeElement.querySelector('#volume') as HTMLInputElement;
+    const inputFields = this.el.nativeElement.querySelector('#input-fields') as HTMLElement;
+    const fuelBtn = this.el.nativeElement.querySelector('#fuel-btn') as HTMLElement;
     const selectElement = this.el.nativeElement.querySelector('#fuel-select') as HTMLSelectElement;
 
     this.renderer.setProperty(amountInput, 'value', '');
     this.renderer.setProperty(volumeInput, 'value', '');
-    this.renderer.setStyle(inputFields, 'display', 'none');
     this.errorMessage = '';
     this.renderer.setStyle(fuelBtn, 'opacity', '1');
     this.renderer.setStyle(fuelBtn, 'pointer-events', 'auto');
@@ -221,7 +219,7 @@ export class ClientDashboardComponent implements OnInit {
     this.renderer.setStyle(selectElement, 'opacity', '1');
     this.renderer.setStyle(selectElement, 'pointer-events', 'auto');
     this.updateFuelDisplay(fuelBtn, selectElement);
-    const logoutBtn = this.el.nativeElement.querySelector('#logout-btn');
+    const logoutBtn = this.el.nativeElement.querySelector('#logout-btn') as HTMLElement;
     if (logoutBtn) {
       this.renderer.listen(logoutBtn, 'click', () => {
         this.logout();
@@ -240,5 +238,24 @@ export class ClientDashboardComponent implements OnInit {
         this.errorMessage = 'Erreur lors de la déconnexion. Veuillez réessayer.';
       }
     );
+  }
+
+  // Gestion de la décrémentation en temps réel
+  startDecrement(amount: number, volume: number, amountInput: HTMLInputElement, volumeInput: HTMLInputElement, inputFields: HTMLElement, fuelBtn: HTMLElement, selectElement: HTMLSelectElement) {
+    console.log('Starting decrement:', { amount, volume });
+    const pricePerLiter = this.getPricePerLiter();
+    this.decrementInterval = setInterval(() => {
+      if (amount > 0) {
+        amount -= 1;
+        if (amount % pricePerLiter === 0) {
+          volume -= 1;
+        }
+        this.renderer.setProperty(amountInput, 'value', amount.toFixed(2));
+        this.renderer.setProperty(volumeInput, 'value', volume.toFixed(2));
+      } else {
+        clearInterval(this.decrementInterval);
+        this.resetForm(amountInput, volumeInput, inputFields, fuelBtn, selectElement);
+      }
+    }, 1);
   }
 }
