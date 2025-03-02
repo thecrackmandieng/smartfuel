@@ -1,80 +1,93 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { Observable, of, throwError } from 'rxjs';
+import { Observable, throwError } from 'rxjs';
 import { tap, catchError } from 'rxjs/operators';
-import { CookieService } from 'ngx-cookie-service'; // Import du service de cookies
+import { Router } from '@angular/router';
 
 @Injectable({
   providedIn: 'root'
 })
 export class AuthService {
-  private readonly baseUrl = 'http://localhost:5000/api/auth'; // Base de l'URL de l'API
+  private readonly baseUrl = 'http://localhost:5000/api/auth';
 
-  constructor(private http: HttpClient, private cookieService: CookieService) {}
+  constructor(private http: HttpClient, private router: Router) {}
 
-  // Fonction pour obtenir l'URL de connexion
   private getLoginUrl(): string {
     return `${this.baseUrl}/login`;
   }
 
-  // Fonction pour obtenir l'URL de déconnexion
   private getLogoutUrl(): string {
     return `${this.baseUrl}/logout`;
   }
 
-  // Méthode pour l'authentification
-authenticate(credentials: { codeSecret: string }): Observable<any> {
-  return this.http.post<any>(this.getLoginUrl(), credentials, { withCredentials: true }).pipe(
-    tap(response => {
-      console.log('Réponse API complète:', response);
-      if (response.role) {
-        localStorage.setItem('userRole', response.role);
-        console.log('Rôle de l\'utilisateur enregistré:', response.role);
+  authenticate(credentials: { codeSecret: string, carteRfid?: string }): Observable<any> {
+    return this.http.post<any>(this.getLoginUrl(), credentials, { withCredentials: true }).pipe(
+      tap(response => {
+        console.log('Réponse API complète:', response);
+
+        if (response.token) {
+          localStorage.setItem('token', response.token);
+          localStorage.setItem('role', response.role);
+          localStorage.setItem('carburant', response.carburant); // Stocker le type de carburant
+          this.decodeAndStoreUserData(response.token);
+        } else {
+          console.error('Échec : Aucun token reçu après connexion !');
+        }
+      }),
+      catchError(error => {
+        console.error('Erreur lors de l\'authentification :', error);
+        return throwError(error);
+      })
+    );
+  }
+
+  private decodeAndStoreUserData(token: string): void {
+    try {
+      const tokenPayload = JSON.parse(atob(token.split('.')[1])); // Décoder le token JWT
+      if (tokenPayload) {
+        localStorage.setItem('userRole', tokenPayload.role);
+        localStorage.setItem('userId', tokenPayload.id);
+        console.log(`Utilisateur connecté : ID=${tokenPayload.id}, Rôle=${tokenPayload.role}`);
       } else {
-        console.error('Échec : Aucun rôle trouvé dans la réponse après connexion !');
+        console.error('Erreur : Impossible d\'extraire les informations du token.');
       }
-    }),
-    catchError(error => {
-      console.error('Erreur lors de l\'authentification :', error);
-      return throwError(error); // Renvoie l'erreur pour être gérée ailleurs
-    })
-  );
-}
+    } catch (error) {
+      console.error('Erreur lors du décodage du token :', error);
+    }
+  }
 
+  getToken(): string | null {
+    return localStorage.getItem('token');
+  }
 
-  // Méthode pour récupérer le rôle de l'utilisateur
- getUserRole(): string | null {
-    return localStorage.getItem('userRole'); // ✅ Récupère le rôle stocké
+  getUserRole(): string {
+    return localStorage.getItem('userRole') || '';
   }
 
   getUserId(): string {
     return localStorage.getItem('userId') || '';
   }
-  
 
-  // Méthode pour la déconnexion
   logout(): Observable<any> {
     return this.http.post<any>(this.getLogoutUrl(), {}).pipe(
       tap(() => {
-        // Suppression du rôle du localStorage
+        localStorage.removeItem('token');
         localStorage.removeItem('userRole');
-        console.log('Déconnexion réussie. Rôle supprimé.');
-        console.log('Cookies après déconnexion:', document.cookie);
+        localStorage.removeItem('userId');
+        console.log('Déconnexion réussie. Données utilisateur supprimées.');
       }),
       catchError((error) => {
         console.error('Erreur lors de la déconnexion :', error);
-        return throwError(error); // Gérer l'erreur
+        return throwError(error);
       })
     );
   }
 
-  // Méthode pour vérifier si l'utilisateur est authentifié
+  getCarburant(): string {
+    return localStorage.getItem('carburant') || '';
+  }
+
   isAuthenticated(): boolean {
-    const userRole = this.getUserRole(); // Récupère le rôle via la méthode getUserRole
-    const isAuth = userRole !== ''; // Vérifie si le rôle n'est pas vide
-    console.log('Vérification de l\'authentification, rôle présent:', userRole);
-    console.log('AuthGuard - Utilisateur authentifié:', isAuth);
-    return this.getUserRole() !== null; // Renvoie true si le rôle est présent, sinon false
-    return isAuth; // Renvoie true si le rôle est présent, sinon false
+    return !!this.getToken();
   }
 }

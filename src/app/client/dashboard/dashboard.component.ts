@@ -6,6 +6,8 @@ import { Router } from '@angular/router';
 import { CrudService } from '../../services/crud.service';
 import { RfidService } from '../../services/rfid.service';
 import { Subscription } from 'rxjs';
+import jsPDF from 'jspdf';
+import html2canvas from 'html2canvas';
 
 @Component({
   selector: 'app-client-dashboard',
@@ -26,10 +28,18 @@ export class ClientDashboardComponent implements OnInit, OnDestroy {
   private decrementInterval: any;
   public isLoggedIn: boolean = false;
   private rfidSubscription!: Subscription;
+  showSuccessModal: boolean = false;
+  showErrorModal: boolean = false;
 
   nom: string = '';
   role: string = '';
   showForm: boolean = false;
+
+  msg: string = '';
+  carburant: string = '';
+  litresAchetes: number = 0;
+  montant: number = 0;
+  montantRestant: number = 0;
 
   constructor(
     private renderer: Renderer2,
@@ -54,7 +64,8 @@ export class ClientDashboardComponent implements OnInit, OnDestroy {
       amountInput: this.el.nativeElement.querySelector('#amount') as HTMLInputElement,
       volumeInput: this.el.nativeElement.querySelector('#volume') as HTMLInputElement,
       validateBtn: this.el.nativeElement.querySelector('#validate-btn') as HTMLElement,
-      cancelBtn: this.el.nativeElement.querySelector('#cancel-btn') as HTMLElement
+      cancelBtn: this.el.nativeElement.querySelector('#cancel-btn') as HTMLElement,
+      errorMessage: this.el.nativeElement.querySelector('#error-message') as HTMLElement
     };
 
     if (Object.values(elements).some(el => !el)) return;
@@ -70,13 +81,14 @@ export class ClientDashboardComponent implements OnInit, OnDestroy {
 
         if (this.role === 'client') {
           this.showForm = true;
+          this.selectedFuelType = this.authService.getCarburant() as 'diesel' | 'gazoil' | 'huile' | 'autre';
           this.renderer.setStyle(elements.inputFields, 'display', 'flex');
           this.updateFuelDisplay(elements.fuelBtn, elements.selectElement);
         }
       },
       (error) => {
         console.error('Erreur lors de la lecture RFID:', error);
-        this.errorMessage = 'Erreur lors de la lecture RFID.';
+        this.setErrorMessage('❌ Erreur lors de la lecture RFID.');
       }
     );
 
@@ -84,11 +96,11 @@ export class ClientDashboardComponent implements OnInit, OnDestroy {
       const target = event.target as HTMLInputElement;
       const amount = parseFloat(target.value);
       if (isNaN(amount) || amount <= 0) {
-        this.errorMessage = 'Montant invalide';
+        this.setErrorMessage('❌ Montant invalide.');
       } else if (amount > this.soldeCompte) {
-        this.errorMessage = 'Le montant dépasse le solde du compte.';
+        this.setErrorMessage('❌ Votre solde est insuffisant.');
       } else {
-        this.errorMessage = '';
+        this.setErrorMessage('');
       }
     });
 
@@ -105,12 +117,12 @@ export class ClientDashboardComponent implements OnInit, OnDestroy {
       const volumeInputValue = parseFloat(elements.volumeInput.value);
 
       if (isNaN(amountInputValue) || isNaN(volumeInputValue) || amountInputValue <= 0 || volumeInputValue <= 0) {
-        this.errorMessage = 'Veuillez entrer un montant et un volume valides.';
+        this.setErrorMessage('❌ Veuillez entrer un montant et un volume valides.');
         return;
       }
 
       if (amountInputValue > this.soldeCompte) {
-        this.errorMessage = 'Erreur: Le montant dépasse le solde du compte.';
+        this.setErrorMessage('❌ Erreur: Votre solde est insuffisant.');
         return;
       }
 
@@ -120,9 +132,22 @@ export class ClientDashboardComponent implements OnInit, OnDestroy {
 
     this.renderer.listen(elements.cancelBtn, 'click', () => {
       this.resetForm(elements.amountInput, elements.volumeInput, elements.inputFields, elements.fuelBtn, elements.selectElement);
+      this.setErrorMessage('');
+    });
+
+    this.renderer.listen(elements.selectElement, 'change', () => {
+      this.toggleFuelSelection(elements.selectElement);
     });
   }
+ // Méthode pour fermer la modale
+ closeErrorModal() {
+  this.errorMessage = '';  // Efface le message d'erreur pour cacher la modale
+}
 
+// Exemple de fonction pour afficher une erreur et activer la modale
+triggerError() {
+  this.errorMessage = 'Une erreur est survenue !';  // Définit le message d'erreur
+}
   ngOnDestroy(): void {
     if (this.rfidSubscription) {
       this.rfidSubscription.unsubscribe();
@@ -205,7 +230,7 @@ export class ClientDashboardComponent implements OnInit, OnDestroy {
       },
       (error) => {
         console.error('Erreur lors de la récupération du solde:', error);
-        this.errorMessage = 'Erreur lors de la récupération du solde. Veuillez réessayer.';
+        this.setErrorMessage('Erreur lors de la récupération du solde. Veuillez réessayer.');
       }
     );
   }
@@ -220,16 +245,31 @@ export class ClientDashboardComponent implements OnInit, OnDestroy {
     this.crudService.acheterCarburant(userId, this.selectedFuelType, volume, amount).subscribe(
       (response) => {
         console.log('Achat réussi:', response);
+        this.msg = 'Achat de carburant effectué avec succès';
+        this.carburant = this.selectedFuelType;
+        this.litresAchetes = volume;
+        this.montant = amount;
+        this.montantRestant = this.soldeCompte - amount;
         this.getUserBalance(userId);
         this.resetFormAfterPurchase();
         this.startDecrement(amount, volume, this.el.nativeElement.querySelector('#amount') as HTMLInputElement, this.el.nativeElement.querySelector('#volume') as HTMLInputElement, this.el.nativeElement.querySelector('#input-fields') as HTMLElement, this.el.nativeElement.querySelector('#fuel-btn') as HTMLElement, this.el.nativeElement.querySelector('#fuel-select') as HTMLSelectElement);
       },
       (error) => {
         console.error('Erreur lors de l\'achat:', error);
-        this.errorMessage = 'Erreur lors de l\'achat. Veuillez réessayer.';
+        if (error.status === 400 && error.error && error.error.msg) {
+          this.setErrorMessage(error.error.msg);
+          this.showErrorModal = true; // Afficher le modal d'erreur
+        } else {
+          this.setErrorMessage('Erreur lors de l\'achat. Veuillez réessayer.');
+        }
       }
     );
   }
+
+  closeModal() {
+    this.showSuccessModal = false;
+  }
+
 
   resetFormAfterPurchase(): void {
     const amountInput = this.el.nativeElement.querySelector('#amount') as HTMLInputElement;
@@ -240,7 +280,7 @@ export class ClientDashboardComponent implements OnInit, OnDestroy {
 
     this.renderer.setProperty(amountInput, 'value', '');
     this.renderer.setProperty(volumeInput, 'value', '');
-    this.errorMessage = '';
+    this.setErrorMessage('');
     this.renderer.setStyle(fuelBtn, 'opacity', '1');
     this.renderer.setStyle(fuelBtn, 'pointer-events', 'auto');
     this.renderer.setStyle(selectElement, 'opacity', '1');
@@ -252,7 +292,7 @@ export class ClientDashboardComponent implements OnInit, OnDestroy {
     this.renderer.setProperty(amountInput, 'value', '');
     this.renderer.setProperty(volumeInput, 'value', '');
     this.renderer.setStyle(inputFields, 'display', 'none');
-    this.errorMessage = '';
+    this.setErrorMessage('');
     this.renderer.setStyle(fuelBtn, 'opacity', '1');
     this.renderer.setStyle(fuelBtn, 'pointer-events', 'auto');
     this.renderer.setStyle(selectElement, 'opacity', '1');
@@ -274,10 +314,11 @@ export class ClientDashboardComponent implements OnInit, OnDestroy {
       },
       (error) => {
         console.error('Erreur lors de la déconnexion:', error);
-        this.errorMessage = 'Erreur lors de la déconnexion. Veuillez réessayer.';
+        this.setErrorMessage('Erreur lors de la déconnexion. Veuillez réessayer.');
       }
     );
   }
+
 
   startDecrement(amount: number, volume: number, amountInput: HTMLInputElement, volumeInput: HTMLInputElement, inputFields: HTMLElement, fuelBtn: HTMLElement, selectElement: HTMLSelectElement) {
     console.log('Starting decrement:', { amount, volume });
@@ -293,7 +334,91 @@ export class ClientDashboardComponent implements OnInit, OnDestroy {
       } else {
         clearInterval(this.decrementInterval);
         this.resetForm(amountInput, volumeInput, inputFields, fuelBtn, selectElement);
+        this.showSuccessModal = true; // Afficher le modal après la décrémentation
+
+        // Générer le PDF après l'affichage du modal
+        setTimeout(() => {
+          this.generatePDF();
+        }, 500); // Attendre un court instant pour s'assurer que le modal est rendu
       }
     }, 1);
+  }
+
+  generatePDF() {
+    const pdf = new jsPDF({
+        orientation: 'portrait',
+        unit: 'mm',
+        format: [80, 120] // Format reçu (80mm x 120mm)
+    });
+
+    const centerX = pdf.internal.pageSize.getWidth() / 2; // Centre du ticket
+    const marginLeft = 10; // Marge gauche pour les textes alignés
+    let positionY = 10; // Position verticale
+
+    // Ajouter un titre centré en gras
+    pdf.setFont('courier', 'bold');
+    pdf.setFontSize(14);
+    pdf.text('SMARTFUEL', centerX, positionY, { align: 'center' });
+
+    positionY += 8;
+    pdf.setFontSize(10);
+    pdf.setFont('courier', 'normal');
+    pdf.text('Ticket de transaction', centerX, positionY, { align: 'center' });
+
+    // Ajouter une ligne séparatrice
+    positionY += 5;
+    pdf.setLineWidth(0.5);
+    pdf.line(5, positionY, 75, positionY);
+
+    // Ajouter la date et l'heure
+    const date = new Date().toLocaleString();
+    positionY += 6;
+    pdf.text(`Date: ${date}`, marginLeft, positionY);
+
+    // Ajouter les détails de l'achat
+    positionY += 8;
+    pdf.setFont('courier', 'bold');
+    pdf.text('Détails de l\'achat:', marginLeft, positionY);
+
+    pdf.setFont('courier', 'normal');
+    positionY += 6;
+    pdf.text(`Carburant: ${this.carburant}`, marginLeft, positionY);
+
+    positionY += 6;
+    pdf.text(`Litres achetés: ${this.litresAchetes} L`, marginLeft, positionY);
+
+    positionY += 6;
+    pdf.text(`Montant: ${this.montant} FCFA`, marginLeft, positionY);
+
+    positionY += 6;
+    pdf.text(`Montant restant: ${this.montantRestant} FCFA`, marginLeft, positionY);
+
+    // Ajouter une ligne séparatrice
+    positionY += 8;
+    pdf.setLineWidth(0.5);
+    pdf.line(5, positionY, 75, positionY);
+
+    // Message de remerciement
+    positionY += 8;
+    pdf.setFontSize(10);
+    pdf.setFont('courier', 'bold');
+    pdf.text('Merci pour votre achat !', centerX, positionY, { align: 'center' });
+
+    positionY += 6;
+    pdf.setFontSize(8);
+    pdf.text('Conservez ce reçu comme preuve.', centerX, positionY, { align: 'center' });
+
+    // Sauvegarder le PDF
+    pdf.save('ticket_achat_carburant.pdf');
+  }
+
+  private setErrorMessage(message: string): void {
+    console.log('Erreur affichée :', message);
+    this.errorMessage = message;
+    const errorMessageElement = this.el.nativeElement.querySelector('#error-message') as HTMLElement;
+    if (errorMessageElement) {
+      this.renderer.setProperty(errorMessageElement, 'textContent', message);
+      this.renderer.setStyle(errorMessageElement, 'color', 'red');
+    }
   }
 }
