@@ -1,9 +1,10 @@
 import { Component, OnInit, Renderer2, ElementRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { HttpClientModule } from '@angular/common/http';
+import { HttpClientModule, HttpClient } from '@angular/common/http';
 import { AuthService } from '../../services/auth.service';
 import { Router } from '@angular/router';
 import { CrudService } from '../../services/crud.service';
+import { io } from 'socket.io-client';
 
 @Component({
   selector: 'app-client-dashboard',
@@ -23,14 +24,19 @@ export class ClientDashboardComponent implements OnInit {
   public errorMessage: string = '';
   private decrementInterval: any;
   public isLoggedIn: boolean = false;
+  public fuelLevels = { essence: 0, gazole: 0 };
+  private socket;
 
   constructor(
     private renderer: Renderer2,
     private el: ElementRef,
     private authService: AuthService,
     private router: Router,
-    private crudService: CrudService
-  ) {}
+    private crudService: CrudService,
+    private http: HttpClient
+  ) {
+    this.socket = io('http://localhost:5000'); // Connectez-vous au serveur WebSocket
+  }
 
   ngOnInit(): void {
     this.isLoggedIn = this.authService.isAuthenticated();
@@ -114,6 +120,12 @@ export class ClientDashboardComponent implements OnInit {
         this.resetForm(amountInput, volumeInput, inputFields, fuelBtn, selectElement);
       });
     }
+
+    // Écouter les mises à jour des niveaux de carburant
+    this.socket.on('fuelUpdate', (data) => {
+      this.fuelLevels = data;
+      console.log('Niveaux de carburant mis à jour:', this.fuelLevels);
+    });
   }
 
   toggleFuelSelection(selectElement: HTMLSelectElement): void {
@@ -184,6 +196,16 @@ export class ClientDashboardComponent implements OnInit {
         this.getUserBalance(userId); // Récupérez le nouveau solde après l'achat
         this.resetFormAfterPurchase();
         this.startDecrement(amount, volume, this.el.nativeElement.querySelector('#amount') as HTMLInputElement, this.el.nativeElement.querySelector('#volume') as HTMLInputElement, this.el.nativeElement.querySelector('#input-fields') as HTMLElement, this.el.nativeElement.querySelector('#fuel-btn') as HTMLElement, this.el.nativeElement.querySelector('#fuel-select') as HTMLSelectElement);
+
+        // Envoyer la commande au serveur pour activer la pompe
+        this.http.post('http://localhost:5000/api/activate-pump', { fuelType: this.selectedFuelType, volume }).subscribe(
+          (response) => {
+            console.log('Pompe activée:', response);
+          },
+          (error) => {
+            console.error('Erreur lors de l\'activation de la pompe:', error);
+          }
+        );
       },
       (error) => {
         console.error('Erreur lors de l\'achat:', error);
@@ -239,23 +261,67 @@ export class ClientDashboardComponent implements OnInit {
       }
     );
   }
-
-  // Gestion de la décrémentation en temps réel
+  private isDecrementing = false;
+  private hasSentStartCommand = false;
+  private hasSentStopCommand = false;
+  
   startDecrement(amount: number, volume: number, amountInput: HTMLInputElement, volumeInput: HTMLInputElement, inputFields: HTMLElement, fuelBtn: HTMLElement, selectElement: HTMLSelectElement) {
+    if (this.isDecrementing) {
+      console.log('Décrémentation déjà en cours.');
+      return;
+    }
+  
     console.log('Starting decrement:', { amount, volume });
     const pricePerLiter = this.getPricePerLiter();
+    const totalTime = volume * 1000; // Temps total en millisecondes
+    let elapsedTime = 0;
+  
+    // Envoyer une commande à l'Arduino pour activer la pompe immédiatement
+    this.sendCommandToArduino(`${this.selectedFuelType}:${volume}`);
+  
+    this.isDecrementing = true;
+  
     this.decrementInterval = setInterval(() => {
-      if (amount > 0) {
-        amount -= 1;
-        if (amount % pricePerLiter === 0) {
-          volume -= 1;
-        }
-        this.renderer.setProperty(amountInput, 'value', amount.toFixed(2));
-        this.renderer.setProperty(volumeInput, 'value', volume.toFixed(2));
-      } else {
+      elapsedTime += 10; // Incrémente le temps écoulé de 10 millisecondes
+      const remainingVolume = volume * (1 - (elapsedTime / totalTime));
+      const remainingAmount = remainingVolume * pricePerLiter;
+  
+      this.renderer.setProperty(amountInput, 'value', remainingAmount.toFixed(2));
+      this.renderer.setProperty(volumeInput, 'value', remainingVolume.toFixed(2));
+  
+      if (elapsedTime >= totalTime) {
         clearInterval(this.decrementInterval);
+        this.isDecrementing = false;
         this.resetForm(amountInput, volumeInput, inputFields, fuelBtn, selectElement);
+  
+        // Ne pas envoyer automatiquement la commande d'arrêt ici
       }
-    }, 1);
+    }, 10); // Mettre à jour toutes les 10 millisecondes
   }
+  
+  
+  stopDecrement() {
+    if (this.isDecrementing && !this.hasSentStopCommand) {
+      this.isDecrementing = false;
+      clearInterval(this.decrementInterval);
+  
+      // Envoyer une commande à l'Arduino pour désactiver la pompe
+      this.sendCommandToArduino('stop');
+      this.hasSentStopCommand = true;
+      this.hasSentStartCommand = false; // Réinitialiser l'indicateur de démarrage
+    }
+  }
+  
+  sendCommandToArduino(command: string) {
+    // Envoyer la commande à l'Arduino via HTTP
+    this.http.post('http://localhost:5000/api/arduino-command', { command }).subscribe(
+      (response) => {
+        console.log('Commande envoyée à Arduino:', response);
+      },
+      (error) => {
+        console.error('Erreur lors de l\'envoi de la commande à Arduino:', error);
+      }
+    );
+  }
+  
 }

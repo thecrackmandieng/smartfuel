@@ -6,31 +6,43 @@
       <div class="card reservoir-card">
         <h3 class="text-large"><i class="fas fa-tint icon-large"></i> RÉSERVOIRE</h3>
         <div class="card-content">
-          <div class="fuel-info">
-            <p class="text-large" style="color: green;"><i class="fas fa-gas-pump icon-large"></i> DIESEL: {{ essenceLevel }}%</p>
+          <div class="fuel-info" [ngClass]="{'critical': essenceLevel <= 25}">
+            <p class="text-large"><i class="fas fa-gas-pump icon-large"></i> DIESEL: {{ essenceLevel }}%</p>
           </div>
-          <div class="fuel-info">
-            <p class="text-large" style="color: brown;"><i class="fas fa-gas-pump icon-large"></i> GAZOIL: {{ gazoleLevel }}%</p>
+          <div class="fuel-info" [ngClass]="{'critical': gazoleLevel <= 25}">
+            <p class="text-large"><i class="fas fa-gas-pump icon-large"></i> GAZOIL: {{ gazoleLevel }}%</p>
           </div>
         </div>
       </div>
+
+      <!-- Carte pour les Pompes -->
       <div class="card pump-card">
         <h3 class="text-large"><i class="fas fa-pump icon-large"></i> POMPE</h3>
         <div class="card-content">
+          <!-- Affichage des données diesel -->
           <div class="fuel-info">
-            <p class="text-large" style="color: green;"><i class="fas fa-gas-pump icon-large"></i> DIESEL: 10L</p>
-            <p class="text-large" style="color: green;">Prix: 10000F</p>
+            <p class="text-large" style="color: green;">
+              <i class="fas fa-gas-pump icon-large"></i> DIESEL: {{ pumpData?.dieselLiters }}L
+            </p>
+            <p class="text-large" style="color: green;">Prix: {{ pumpData?.dieselAmount }}F</p>
           </div>
+
+          <!-- Affichage des données gazole -->
           <div class="fuel-info">
-            <p class="text-large" style="color: brown;"><i class="fas fa-gas-pump icon-large"></i> GAZOIL: 20L</p>
-            <p class="text-large" style="color: brown;">Prix: 18000F</p>
+            <p class="text-large" style="color: brown;">
+              <i class="fas fa-gas-pump icon-large"></i> GAZOIL: {{ pumpData?.gazoleLiters }}L
+            </p>
+            <p class="text-large" style="color: brown;">Prix: {{ pumpData?.gazoleAmount }}F</p>
           </div>
         </div>
       </div>
     </div>
+
+    <!-- Graphique pour Volume Vendu -->
     <div class="card chart-card">
       <h3 class="text-large">Volume vendu (%)</h3>
       <canvas #salesChart width="370" height="90"></canvas>
+      <button (click)="toggleHistoricalData()">Voir l'historique de la semaine</button>
     </div>
   </div>
 </div>

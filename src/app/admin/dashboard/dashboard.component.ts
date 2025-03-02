@@ -4,6 +4,13 @@ import { SidebarComponent } from '../../sidebar/sidebar.component';
 import { Chart, registerables } from 'chart.js';
 import { isPlatformBrowser } from '@angular/common';
 import { FuelLevelService } from './../../services/fuel-level.service';
+import { PumpService } from './../../services/pump.service';
+import { Observable } from 'rxjs';
+
+interface HistoricalData {
+  diesel: number[];
+  gazole: number[];
+}
 
 @Component({
   selector: 'app-dashboard',
@@ -18,15 +25,20 @@ export class AdminDashboardComponent implements AfterViewInit {
   isBrowser: boolean = false;
   essenceLevel: number = 0;
   gazoleLevel: number = 0;
+  pumpData: any = {};
+  historicalData: HistoricalData = { diesel: [], gazole: [] };
+  showHistorical: boolean = false;
 
   constructor(
     @Inject(PLATFORM_ID) private platformId: Object,
-    private fuelLevelService: FuelLevelService
+    private fuelLevelService: FuelLevelService,
+    private pumpService: PumpService
   ) {}
 
   ngOnInit() {
     this.isBrowser = isPlatformBrowser(this.platformId);
     this.fetchFuelLevels();
+    this.fetchPumpData();
   }
 
   ngAfterViewInit() {
@@ -40,10 +52,10 @@ export class AdminDashboardComponent implements AfterViewInit {
         this.chart = new Chart(context, {
           type: 'line',
           data: {
-            labels: ['Lun', 'Mar', 'Mer', 'Jeu', 'Ven', 'Sam', 'Dim'],
+            labels: this.getWeekDays(),
             datasets: [{
-              label: 'Ventes Diesel (%)',
-              data: [30, 45, 55, 50, 65, 75, 85],
+              label: 'Ventes Diesel (litres)',
+              data: [0, 0, 0, 0, 0, 0, 0],
               borderColor: '#10b981',
               backgroundColor: 'rgba(16, 185, 129, 0.1)',
               fill: true,
@@ -51,8 +63,8 @@ export class AdminDashboardComponent implements AfterViewInit {
               borderWidth: 2,
               pointBackgroundColor: '#10b981'
             }, {
-              label: 'Ventes Gazoil (%)',
-              data: [20, 40, 60, 65, 55, 80, 70],
+              label: 'Ventes Gazoil (litres)',
+              data: [0, 0, 0, 0, 0, 0, 0],
               borderColor: '#a16207',
               backgroundColor: 'rgba(161, 98, 7, 0.1)',
               fill: true,
@@ -111,5 +123,74 @@ export class AdminDashboardComponent implements AfterViewInit {
       this.gazoleLevel = data.gazole;
       console.log('Niveaux de carburant mis à jour:', data);
     });
+  }
+
+  fetchPumpData() {
+    this.pumpService.getPumpData().subscribe((data) => {
+      console.log('Données des pompes reçues:', data);
+      if (data) {
+        this.pumpData = {
+          dieselLiters: data.diesel?.liters || 0,
+          dieselAmount: data.diesel?.amount || 0,
+          gazoleLiters: data.gazoil?.liters || 0,
+          gazoleAmount: data.gazoil?.amount || 0
+        };
+
+        if (this.chart && !this.showHistorical) {
+          const dieselData = [0, 0, 0, 0, 0, 0, this.pumpData.dieselLiters];
+          const gazoleData = [0, 0, 0, 0, 0, 0, this.pumpData.gazoleLiters];
+
+          this.chart.data.datasets[0].data = dieselData;
+          this.chart.data.datasets[1].data = gazoleData;
+          this.chart.update();
+        }
+      } else {
+        console.error('Structure des données incorrecte:', data);
+      }
+    }, (error: any) => {
+      console.error('Erreur lors de la récupération des données des pompes:', error);
+    });
+  }
+
+  fetchHistoricalData() {
+    this.pumpService.getPumpData().subscribe((data: HistoricalData) => {
+      this.historicalData = {
+        diesel: data.diesel || [0, 0, 0, 0, 0, 0, 0],
+        gazole: data.gazole || [0, 0, 0, 0, 0, 0, 0]
+      };
+
+      if (this.chart && this.showHistorical) {
+        this.chart.data.datasets[0].data = this.historicalData.diesel;
+        this.chart.data.datasets[1].data = this.historicalData.gazole;
+        this.chart.update();
+      }
+    }, (error: any) => {
+      console.error('Erreur lors de la récupération des données historiques:', error);
+    });
+  }
+
+  toggleHistoricalData() {
+    this.showHistorical = !this.showHistorical;
+    if (this.showHistorical) {
+      this.fetchHistoricalData();
+    } else {
+      const dieselData = [0, 0, 0, 0, 0, 0, this.pumpData.dieselLiters];
+      const gazoleData = [0, 0, 0, 0, 0, 0, this.pumpData.gazoleLiters];
+
+      this.chart.data.datasets[0].data = dieselData;
+      this.chart.data.datasets[1].data = gazoleData;
+      this.chart.update();
+    }
+  }
+
+  getWeekDays(): string[] {
+    const today = new Date();
+    const weekdays = [];
+    for (let i = 0; i < 7; i++) {
+      const day = new Date(today);
+      day.setDate(today.getDate() - today.getDay() + i);
+      weekdays.push(day.toLocaleDateString('fr-FR', { weekday: 'short' }));
+    }
+    return weekdays;
   }
 }
