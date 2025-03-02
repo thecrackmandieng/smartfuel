@@ -1,27 +1,33 @@
 import { Component, OnInit, Renderer2, ElementRef } from '@angular/core';
 import { AuthService } from '../../services/auth.service';
 import { Router } from '@angular/router';
+import { HttpClient } from '@angular/common/http';
 
 @Component({
   selector: 'app-pompiste-dashboard',
   standalone: true,
   templateUrl: './dashboard.component.html',
   styleUrls: ['./dashboard.component.css'],
-  providers: [AuthService, Router]
+  providers: [AuthService, Router, HttpClient]
 })
 export class PompisteDashboardComponent implements OnInit {
-  // Définition des prix des carburants
   private dieselPricePerLiter = 1000;
   private gazoilPricePerLiter = 900;
   private selectedFuelType: string | null = null;
   private soldeCompte = 100000; // Solde initial du compte
   public errorMessage: string = '';
   private decrementInterval: any;
+  private isDecrementing = false;
 
-  constructor(private renderer: Renderer2, private el: ElementRef,  private authService: AuthService,  private router: Router) {}
+  constructor(
+    private renderer: Renderer2,
+    private el: ElementRef,
+    private authService: AuthService,
+    private router: Router,
+    private http: HttpClient
+  ) {}
 
   ngOnInit(): void {
-    // Récupération des éléments HTML
     const dieselBtn = this.el.nativeElement.querySelector('#diesel-btn');
     const gazoilBtn = this.el.nativeElement.querySelector('#gazoil-btn');
     const inputFields = this.el.nativeElement.querySelector('#input-fields');
@@ -31,7 +37,6 @@ export class PompisteDashboardComponent implements OnInit {
     const cancelBtn = this.el.nativeElement.querySelector('#cancel-btn');
 
     if (dieselBtn && gazoilBtn && inputFields && amountInput && volumeInput && validateBtn && cancelBtn) {
-      // Ajout des écouteurs d'événements pour la sélection du carburant
       this.renderer.listen(dieselBtn, 'click', () => {
         this.toggleFuelSelection('diesel', dieselBtn, gazoilBtn, inputFields);
       });
@@ -40,44 +45,37 @@ export class PompisteDashboardComponent implements OnInit {
         this.toggleFuelSelection('gazoil', gazoilBtn, dieselBtn, inputFields);
       });
 
-      // Gestion de la saisie du montant pour calculer le volume correspondant
       this.renderer.listen(amountInput, 'input', (event: Event) => {
         const target = event.target as HTMLInputElement;
         const amount = parseFloat(target.value);
         const volume = this.calculateVolume(amount);
-        
+
         if (volumeInput) {
           this.renderer.setProperty(volumeInput, 'value', volume.toFixed(2));
         }
 
-        // Vérification du solde du compte
         if (amount > this.soldeCompte) {
           this.errorMessage = 'Le montant dépasse le solde de votre compte.';
         } else {
-          this.errorMessage = ''; 
+          this.errorMessage = '';
         }
       });
 
-      // Gestion de la saisie du volume pour calculer le montant correspondant
       this.renderer.listen(volumeInput, 'input', (event: Event) => {
         const target = event.target as HTMLInputElement;
         const volume = parseFloat(target.value);
         const amount = this.calculateAmount(volume);
-        
+
         if (amountInput) {
           this.renderer.setProperty(amountInput, 'value', amount.toFixed(2));
         }
       });
 
-      // Validation de la transaction
       this.renderer.listen(validateBtn, 'click', () => {
         const amountInputValue = parseFloat(amountInput.value);
         const volumeInputValue = parseFloat(volumeInput.value);
 
         if (amountInputValue <= this.soldeCompte && this.selectedFuelType) {
-    
-          
-          
           this.disableButtons(dieselBtn, gazoilBtn);
           this.startDecrement(amountInputValue, volumeInputValue, amountInput, volumeInput, inputFields, dieselBtn, gazoilBtn);
         } else {
@@ -85,7 +83,6 @@ export class PompisteDashboardComponent implements OnInit {
         }
       });
 
-      // Annulation de la transaction
       this.renderer.listen(cancelBtn, 'click', () => {
         this.resetForm(amountInput, volumeInput, inputFields, dieselBtn, gazoilBtn);
       });
@@ -99,12 +96,10 @@ export class PompisteDashboardComponent implements OnInit {
     }
   }
 
-   // Méthode de déconnexion
-   logout(): void {
+  logout(): void {
     this.authService.logout().subscribe(
       (response) => {
         console.log('Déconnexion réussie:', response);
-        // Redirigez l'utilisateur vers la page de connexion ou une autre page
         this.router.navigate(['/']);
       },
       (error) => {
@@ -114,7 +109,6 @@ export class PompisteDashboardComponent implements OnInit {
     );
   }
 
-  // Fonction pour gérer la sélection du type de carburant
   toggleFuelSelection(fuelType: string, activeBtn: HTMLElement, inactiveBtn: HTMLElement, inputFields: HTMLElement): void {
     this.selectedFuelType = fuelType;
     this.renderer.setStyle(inputFields, 'display', 'flex');
@@ -123,19 +117,16 @@ export class PompisteDashboardComponent implements OnInit {
     this.renderer.setStyle(inactiveBtn, 'pointer-events', 'none');
   }
 
-  // Calcul du volume en fonction du montant
   calculateVolume(amount: number): number {
     const pricePerLiter = this.selectedFuelType === 'diesel' ? this.dieselPricePerLiter : this.gazoilPricePerLiter;
     return amount / pricePerLiter;
   }
 
-  // Calcul du montant en fonction du volume
   calculateAmount(volume: number): number {
     const pricePerLiter = this.selectedFuelType === 'diesel' ? this.dieselPricePerLiter : this.gazoilPricePerLiter;
     return volume * pricePerLiter;
   }
 
-  // Désactivation des boutons de sélection du carburant
   disableButtons(dieselBtn: HTMLElement, gazoilBtn: HTMLElement) {
     this.renderer.setStyle(dieselBtn, 'opacity', '0.5');
     this.renderer.setStyle(dieselBtn, 'pointer-events', 'none');
@@ -143,34 +134,62 @@ export class PompisteDashboardComponent implements OnInit {
     this.renderer.setStyle(gazoilBtn, 'pointer-events', 'none');
   }
 
-  // Gestion de la décrémentation en temps réel
   startDecrement(amount: number, volume: number, amountInput: HTMLInputElement, volumeInput: HTMLInputElement, inputFields: HTMLElement, dieselBtn: HTMLElement, gazoilBtn: HTMLElement) {
+    if (this.isDecrementing) {
+      console.log('Décrémentation déjà en cours.');
+      return;
+    }
+
+    console.log('Starting decrement:', { amount, volume });
     const pricePerLiter = this.selectedFuelType === 'diesel' ? this.dieselPricePerLiter : this.gazoilPricePerLiter;
+    const totalTime = volume * 1000; // Temps total en millisecondes
+    let elapsedTime = 0;
+
+    // Envoyer une commande à l'Arduino pour activer la pompe
+    this.sendCommandToArduino(`${this.selectedFuelType}:${volume}`);
+
+    this.isDecrementing = true;
+
     this.decrementInterval = setInterval(() => {
-      if (amount > 0) {
-        amount -= 1;
-        if (amount % pricePerLiter === 0) {
-          volume -= 1;
-        }
-        this.renderer.setProperty(amountInput, 'value', amount.toFixed(2));
-        this.renderer.setProperty(volumeInput, 'value', volume.toFixed(2));
-      } else {
+      elapsedTime += 10; // Incrémente le temps écoulé de 10 millisecondes
+      const remainingVolume = volume * (1 - (elapsedTime / totalTime));
+      const remainingAmount = remainingVolume * pricePerLiter;
+
+      this.renderer.setProperty(amountInput, 'value', remainingAmount.toFixed(2));
+      this.renderer.setProperty(volumeInput, 'value', remainingVolume.toFixed(2));
+
+      if (elapsedTime >= totalTime) {
         clearInterval(this.decrementInterval);
+        this.isDecrementing = false;
         this.resetForm(amountInput, volumeInput, inputFields, dieselBtn, gazoilBtn);
+
+        // Envoyer une commande à l'Arduino pour désactiver la pompe
+        this.sendCommandToArduino('stop');
       }
-    }, 1);
+    }, 10); // Mettre à jour toutes les 10 millisecondes
   }
 
-  // Réinitialisation du formulaire après l'annulation ou la fin de la transaction
   resetForm(amountInput: HTMLInputElement, volumeInput: HTMLInputElement, inputFields: HTMLElement, dieselBtn: HTMLElement, gazoilBtn: HTMLElement): void {
     this.renderer.setProperty(amountInput, 'value', '');
     this.renderer.setProperty(volumeInput, 'value', '');
     this.renderer.setStyle(inputFields, 'display', 'none');
-    this.errorMessage = ''; 
+    this.errorMessage = '';
     this.selectedFuelType = null;
     this.renderer.setStyle(dieselBtn, 'opacity', '1');
     this.renderer.setStyle(dieselBtn, 'pointer-events', 'auto');
     this.renderer.setStyle(gazoilBtn, 'opacity', '1');
     this.renderer.setStyle(gazoilBtn, 'pointer-events', 'auto');
+  }
+
+  sendCommandToArduino(command: string) {
+    // Envoyer la commande à l'Arduino via HTTP
+    this.http.post('http://localhost:5000/api/arduino-command', { command }).subscribe(
+      (response) => {
+        console.log('Commande envoyée à Arduino:', response);
+      },
+      (error) => {
+        console.error('Erreur lors de l\'envoi de la commande à Arduino:', error);
+      }
+    );
   }
 }
