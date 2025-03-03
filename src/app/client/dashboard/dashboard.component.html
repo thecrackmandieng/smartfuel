@@ -6,7 +6,7 @@
           <i class="fas fa-power-off"></i>
         </button>
         <div class="fuel-options">
-
+      
           <!-- Déplacez le bouton et le menu déroulant en haut -->
           <div class="fuel-card">
             <button id="fuel-btn" class="icon-btn">
@@ -28,25 +28,14 @@
               <button id="cancel-btn" type="button" class="btn cancel-btn">Annuler</button>
               <button id="validate-btn" type="button" class="btn validate-btn">Valider</button>
             </div>
-
-              <!-- Modal Structure -->
-              <div *ngIf="errorMessage" class="modal-overlay">
-                <div class="modal-content">
-                  <h2>Erreur</h2>
-                  <p>{{ errorMessage }}</p>
-                  <button (click)="closeErrorModal()">Fermer</button>
-                </div>
-              </div>
-
           </div>
         </div>
       </div>
     </div>
   </div>
 
-
-  <!-- Modal Structure -->
-  <div *ngIf="showSuccessModal" class="modal-overlay">
+   <!-- Modal Structure -->
+   <div *ngIf="showSuccessModal" class="modal-overlay">
     <div class="modal-content">
       <h2>{{ msg }}</h2>
       <p>Carburant: {{ carburant }}</p>

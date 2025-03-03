@@ -72,14 +72,9 @@ export class CrudService {
 }
 
 // Méthode pour acheter du carburant
- acheterCarburant(userId: string, carburant: string, litresAchetes?: number, montant?: number): Observable<any> {
+acheterCarburant(userId: string, carburant: string, litresAchetes?: number, montant?: number): Observable<any> {
   const body = { carburant, litresAchetes, montant };
-  return this.http.post(`${this.baseUrl}/acheterCarburant/${userId}`, body).pipe(
-    catchError((error) => {
-      console.error('Erreur lors de l\'achat de carburant:', error);
-      throw error;
-    })
-  );
+  return this.http.post(`${this.baseUrl}/acheterCarburant/${userId}`, body);
 }
   
 }

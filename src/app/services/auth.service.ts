@@ -1,7 +1,6 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable, throwError } from 'rxjs';
-import { Observable, throwError } from 'rxjs';
 import { tap, catchError } from 'rxjs/operators';
 import { Router } from '@angular/router';
 
@@ -9,7 +8,6 @@ import { Router } from '@angular/router';
   providedIn: 'root'
 })
 export class AuthService {
-  private readonly baseUrl = 'http://localhost:5000/api/auth';
   private readonly baseUrl = 'http://localhost:5000/api/auth';
 
   constructor(private http: HttpClient, private router: Router) {}
@@ -62,24 +60,7 @@ export class AuthService {
     return localStorage.getItem('token');
   }
 
-  private decodeAndStoreUserData(token: string): void {
-    try {
-      const tokenPayload = JSON.parse(atob(token.split('.')[1])); // Décoder le token JWT
-      if (tokenPayload) {
-        localStorage.setItem('userRole', tokenPayload.role);
-        localStorage.setItem('userId', tokenPayload.id);
-        console.log(`Utilisateur connecté : ID=${tokenPayload.id}, Rôle=${tokenPayload.role}`);
-      } else {
-        console.error('Erreur : Impossible d\'extraire les informations du token.');
-      }
-    } catch (error) {
-      console.error('Erreur lors du décodage du token :', error);
-    }
-  }
 
-  getToken(): string | null {
-    return localStorage.getItem('token');
-  }
 
   getUserRole(): string {
     return localStorage.getItem('userRole') || '';
@@ -90,9 +71,6 @@ export class AuthService {
     return localStorage.getItem('userRole') || '';
   }
 
-  getUserId(): string {
-    return localStorage.getItem('userId') || '';
-  }
 
 
   logout(): Observable<any> {
