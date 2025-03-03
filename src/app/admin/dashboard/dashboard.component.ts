@@ -1,8 +1,9 @@
 import { Component, AfterViewInit, ViewChild, ElementRef, Inject, PLATFORM_ID } from '@angular/core';
-import { CommonModule } from '@angular/common'; // Assurez-vous que CommonModule est importé
+import { CommonModule } from '@angular/common';
 import { SidebarComponent } from '../../sidebar/sidebar.component';
 import { Chart, registerables } from 'chart.js';
 import { isPlatformBrowser } from '@angular/common';
+import { FuelLevelService } from './../../services/fuel-level.service';
 
 @Component({
   selector: 'app-dashboard',
@@ -14,18 +15,22 @@ import { isPlatformBrowser } from '@angular/common';
 export class AdminDashboardComponent implements AfterViewInit {
   @ViewChild('salesChart') salesChartRef!: ElementRef<HTMLCanvasElement>;
   chart!: Chart;
-  isBrowser: boolean = false;  // Flag pour vérifier si c'est dans un navigateur
+  isBrowser: boolean = false;
+  essenceLevel: number = 0;
+  gazoleLevel: number = 0;
 
-  constructor(@Inject(PLATFORM_ID) private platformId: Object) {}
+  constructor(
+    @Inject(PLATFORM_ID) private platformId: Object,
+    private fuelLevelService: FuelLevelService
+  ) {}
 
   ngOnInit() {
-    // Vérifier si c'est un navigateur
     this.isBrowser = isPlatformBrowser(this.platformId);
+    this.fetchFuelLevels();
   }
 
   ngAfterViewInit() {
     if (this.isBrowser) {
-      // ✅ Enregistrer les modules Chart.js (version 3+)
       Chart.register(...registerables);
 
       const canvas = this.salesChartRef.nativeElement;
@@ -98,5 +103,13 @@ export class AdminDashboardComponent implements AfterViewInit {
     } else {
       console.error('Non exécuté dans un navigateur.');
     }
+  }
+
+  fetchFuelLevels() {
+    this.fuelLevelService.getFuelLevels().subscribe((data) => {
+      this.essenceLevel = data.essence;
+      this.gazoleLevel = data.gazole;
+      console.log('Niveaux de carburant mis à jour:', data);
+    });
   }
 }

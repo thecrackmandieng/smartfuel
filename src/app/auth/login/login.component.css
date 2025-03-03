@@ -9,6 +9,9 @@
   background: linear-gradient(to bottom, #2bb3e0, black);
   margin: 0;
   padding: 0;
+  background: linear-gradient(to bottom, #2bb3e0, black);
+  margin: 0;
+  padding: 0;
   }
 
 .login-content {
@@ -35,6 +38,7 @@
 }
 
 
+
 /* Ajoutez ces styles pour les champs de saisie */
 .code-inputs-wrapper {
   background-image: linear-gradient(to left, rgba(10, 10, 10, 0.0), rgba(10, 10, 10, 0.8)); /* Dégradé linéaire pour réduire l'opacité sur le côté gauche */
@@ -45,10 +49,14 @@
   justify-content: center;
   align-items: center;
   flex-direction: column; /* Aligner les éléments en colonne */
+  flex-direction: column; /* Aligner les éléments en colonne */
   margin-top: 10px; /* Ajustez la marge supérieure selon vos besoins */
   width: 290px;
   margin-left: -50px;
+  width: 290px;
+  margin-left: -50px;
 }
+
 
 .code-inputs {
   display: flex;
@@ -66,11 +74,13 @@
   box-sizing: border-box;
 }
 
+
 .error-message {
   color: red;
   font-weight: bold;
   text-align: center;
   margin-top: 10px;
+  font-size: 15px;
   font-size: 15px;
 }
 
@@ -79,9 +89,13 @@
   margin-top: 30px;
   margin-left: 20px;
 
+  margin-top: 30px;
+  margin-left: 20px;
+
 }
 
 .progress-bar {
+  width: 40%;
   width: 40%;
   background-color: #f3f3f3;
   border-radius: 5px;

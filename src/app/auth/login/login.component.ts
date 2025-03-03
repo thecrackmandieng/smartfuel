@@ -1,4 +1,4 @@
-import { Component, ViewChild, ElementRef, AfterViewInit } from '@angular/core';
+import { Component, ViewChild, ElementRef, AfterViewInit, OnDestroy } from '@angular/core';
 import { Router } from '@angular/router';
 import { AuthService } from '../../services/auth.service';
 import { FormsModule } from '@angular/forms';
@@ -12,8 +12,11 @@ import { RfidService } from '../../services/rfid.service';
   templateUrl: './login.component.html',
   styleUrls: ['./login.component.css']
 })
-export class LoginComponent implements AfterViewInit {
+export class LoginComponent implements AfterViewInit, OnDestroy {
   @ViewChild('input1') input1!: ElementRef;
+  @ViewChild('input2') input2!: ElementRef;
+  @ViewChild('input3') input3!: ElementRef;
+  @ViewChild('input4') input4!: ElementRef;
 
   credentials: { [key in 'code1' | 'code2' | 'code3' | 'code4']: string } = {
     code1: '',
@@ -92,6 +95,7 @@ export class LoginComponent implements AfterViewInit {
   }
 
   showTemporaryValue(input: any): void {
+    input.select();
     input.select();
   }
 
@@ -173,6 +177,7 @@ export class LoginComponent implements AfterViewInit {
         clearInterval(interval);
         this.isLocked = false;
         this.errorMessage = null;
+        this.errorMessage = null;
         this.clearInputs();
       }
     }, 1000);
@@ -188,6 +193,7 @@ export class LoginComponent implements AfterViewInit {
   clearInputs(): void {
     this.credentials = { code1: '', code2: '', code3: '', code4: '' };
     if (this.input1 && this.input1.nativeElement) {
+      this.input1.nativeElement.focus();
       this.input1.nativeElement.focus();
     }
   }
