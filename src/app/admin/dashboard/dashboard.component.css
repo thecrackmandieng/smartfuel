@@ -349,3 +349,17 @@
   color: red;
   font-weight: bold;
 }
+.chart-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.period-selector {
+  margin-left: auto; /* Pousse le sélecteur à droite */
+}
+
+.period-selector select {
+  padding: 5px;
+  font-size: 14px;
+}

@@ -38,7 +38,7 @@ export class AdminDashboardComponent implements AfterViewInit {
   ngOnInit() {
     this.isBrowser = isPlatformBrowser(this.platformId);
     this.fetchFuelLevels();
-    this.fetchPumpData();
+    this.fetchPumpData('today'); // Initialiser avec les données du jour
   }
 
   ngAfterViewInit() {
@@ -125,62 +125,59 @@ export class AdminDashboardComponent implements AfterViewInit {
     });
   }
 
-  fetchPumpData() {
-    this.pumpService.getPumpData().subscribe((data) => {
-      console.log('Données des pompes reçues:', data);
-      if (data) {
-        this.pumpData = {
-          dieselLiters: data.diesel?.liters || 0,
-          dieselAmount: data.diesel?.amount || 0,
-          gazoleLiters: data.gazoil?.liters || 0,
-          gazoleAmount: data.gazoil?.amount || 0
-        };
+  fetchPumpData(period: string = 'today') {
+    let observable: Observable<any>;
+    if (period === 'lastWeek') {
+      observable = this.pumpService.getHistoricalPumpData();
+    } else if (period === 'lastMonth') {
+      observable = this.pumpService.getMonthlyPumpData();
+    } else {
+      observable = this.pumpService.getPumpData();
+    }
 
-        if (this.chart && !this.showHistorical) {
-          const dieselData = [0, 0, 0, 0, 0, 0, this.pumpData.dieselLiters];
-          const gazoleData = [0, 0, 0, 0, 0, 0, this.pumpData.gazoleLiters];
+    observable.subscribe((data) => {
+      console.log(`Données des pompes pour la période ${period} reçues:`, data);
+      if (data) {
+        if (period === 'today') {
+          this.pumpData = {
+            dieselLiters: data.diesel?.liters || 0,
+            dieselAmount: data.diesel?.amount || 0,
+            gazoleLiters: data.gazoil?.liters || 0,
+            gazoleAmount: data.gazoil?.amount || 0
+          };
+
+          const dieselData = this.initializeWeekData();
+          const gazoleData = this.initializeWeekData();
+
+          // Mettre à jour les données du jour actuel
+          const todayIndex = new Date().getDay();
+          dieselData[todayIndex] = this.pumpData.dieselLiters;
+          gazoleData[todayIndex] = this.pumpData.gazoleLiters;
 
           this.chart.data.datasets[0].data = dieselData;
           this.chart.data.datasets[1].data = gazoleData;
-          this.chart.update();
+        } else {
+          this.historicalData = {
+            diesel: data.diesel || this.initializeWeekData(),
+            gazole: data.gazole || this.initializeWeekData()
+          };
+
+          this.chart.data.datasets[0].data = this.historicalData.diesel;
+          this.chart.data.datasets[1].data = this.historicalData.gazole;
         }
+
+        this.chart.update();
       } else {
         console.error('Structure des données incorrecte:', data);
       }
     }, (error: any) => {
-      console.error('Erreur lors de la récupération des données des pompes:', error);
+      console.error(`Erreur lors de la récupération des données des pompes pour la période ${period}:`, error);
     });
   }
 
-  fetchHistoricalData() {
-    this.pumpService.getPumpData().subscribe((data: HistoricalData) => {
-      this.historicalData = {
-        diesel: data.diesel || [0, 0, 0, 0, 0, 0, 0],
-        gazole: data.gazole || [0, 0, 0, 0, 0, 0, 0]
-      };
-
-      if (this.chart && this.showHistorical) {
-        this.chart.data.datasets[0].data = this.historicalData.diesel;
-        this.chart.data.datasets[1].data = this.historicalData.gazole;
-        this.chart.update();
-      }
-    }, (error: any) => {
-      console.error('Erreur lors de la récupération des données historiques:', error);
-    });
-  }
-
-  toggleHistoricalData() {
-    this.showHistorical = !this.showHistorical;
-    if (this.showHistorical) {
-      this.fetchHistoricalData();
-    } else {
-      const dieselData = [0, 0, 0, 0, 0, 0, this.pumpData.dieselLiters];
-      const gazoleData = [0, 0, 0, 0, 0, 0, this.pumpData.gazoleLiters];
-
-      this.chart.data.datasets[0].data = dieselData;
-      this.chart.data.datasets[1].data = gazoleData;
-      this.chart.update();
-    }
+  onPeriodChange(event: any) {
+    const period = event.target.value;
+    this.fetchPumpData(period);
   }
 
   getWeekDays(): string[] {
@@ -192,5 +189,9 @@ export class AdminDashboardComponent implements AfterViewInit {
       weekdays.push(day.toLocaleDateString('fr-FR', { weekday: 'short' }));
     }
     return weekdays;
+  }
+
+  initializeWeekData(): number[] {
+    return [0, 0, 0, 0, 0, 0, 0];
   }
 }

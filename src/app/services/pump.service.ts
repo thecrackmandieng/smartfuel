@@ -7,18 +7,38 @@ import { catchError } from 'rxjs/operators';
   providedIn: 'root'
 })
 export class PumpService {
-  private apiUrl = 'http://localhost:5000/api/pompes/ventes-pompes'; // Vérifiez que l'API est bien accessible
+  private apiUrl = 'http://localhost:5000/api/pompes'; // Assurez-vous que l'URL est correcte
 
   constructor(private http: HttpClient) {}
 
-  getPumpData(): Observable<any> {
+  private getHeaders(): HttpHeaders {
     const token = localStorage.getItem('token'); // Récupération du token stocké
-    const headers = new HttpHeaders().set('Authorization', `Bearer ${token}`);
+    return new HttpHeaders().set('Authorization', `Bearer ${token}`);
+  }
 
-    return this.http.get<any>(this.apiUrl, { headers }).pipe(
+  getPumpData(): Observable<any> {
+    return this.http.get<any>(`${this.apiUrl}/ventes-pompes`, { headers: this.getHeaders() }).pipe(
       catchError(error => {
         console.error('❌ Erreur lors de la récupération des données de la pompe :', error);
         return throwError(() => new Error('Erreur lors de la récupération des données.'));
+      })
+    );
+  }
+
+  getHistoricalPumpData(): Observable<any> {
+    return this.http.get<any>(`${this.apiUrl}/ventes-pompes/historical`, { headers: this.getHeaders() }).pipe(
+      catchError(error => {
+        console.error('❌ Erreur lors de la récupération des données historiques de la pompe :', error);
+        return throwError(() => new Error('Erreur lors de la récupération des données historiques.'));
+      })
+    );
+  }
+
+  getMonthlyPumpData(): Observable<any> {
+    return this.http.get<any>(`${this.apiUrl}/ventes-pompes/monthly`, { headers: this.getHeaders() }).pipe(
+      catchError(error => {
+        console.error('❌ Erreur lors de la récupération des données mensuelles de la pompe :', error);
+        return throwError(() => new Error('Erreur lors de la récupération des données mensuelles.'));
       })
     );
   }

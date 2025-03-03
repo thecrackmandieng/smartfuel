@@ -3,6 +3,7 @@
   <div class="dashboard-container">
     <div class="profile-photo-container"></div>
     <div class="flex-container">
+      <!-- Carte pour le Réservoir -->
       <div class="card reservoir-card">
         <h3 class="text-large"><i class="fas fa-tint icon-large"></i> RÉSERVOIRE</h3>
         <div class="card-content">
@@ -40,9 +41,18 @@
 
     <!-- Graphique pour Volume Vendu -->
     <div class="card chart-card">
-      <h3 class="text-large">Volume vendu (%)</h3>
+      <div class="chart-header">
+        <h3 class="text-large">Volume vendu (%)</h3>
+        <!-- Sélecteur pour choisir la période -->
+        <div class="period-selector">
+          <select (change)="onPeriodChange($event)">
+            <option value="today">Aujourd'hui</option>
+            <option value="lastWeek">Semaine passée</option>
+            <option value="lastMonth">Mois passé</option>
+          </select>
+        </div>
+      </div>
       <canvas #salesChart width="370" height="90"></canvas>
-      <button (click)="toggleHistoricalData()">Voir l'historique de la semaine</button>
     </div>
   </div>
 </div>
