@@ -6,8 +6,6 @@
           <i class="fas fa-power-off"></i>
         </button>
         <div class="fuel-options">
-      
-          <!-- Déplacez le bouton et le menu déroulant en haut -->
           <div class="fuel-card">
             <button id="fuel-btn" class="icon-btn">
               <i class="fas fa-gas-pump"></i> DIESEL
@@ -16,14 +14,14 @@
               <option *ngFor="let fuel of availableFuelTypes" [value]="fuel">{{ fuel.toUpperCase() }}</option>
             </select>
           </div>
-          <!-- Les champs de saisie restent en dessous -->
           <div id="input-fields" class="input-fields" style="display: none;">
             <label for="amount">Montant:</label>
             <input type="number" id="amount" name="amount">
             <label for="volume">Volume/L:</label>
             <input type="number" id="volume" name="volume">
-            <div id="error-message" class="error-message" style="visibility: hidden;">{{ errorMessage }}</div>
-
+            <div id="error-message" class="error-message" [style.visibility]="errorMessage ? 'visible' : 'hidden'">
+              {{ errorMessage }}
+            </div>
             <div class="button-group">
               <button id="cancel-btn" type="button" class="btn cancel-btn">Annuler</button>
               <button id="validate-btn" type="button" class="btn validate-btn">Valider</button>
@@ -34,8 +32,8 @@
     </div>
   </div>
 
-   <!-- Modal Structure -->
-   <div *ngIf="showSuccessModal" class="modal-overlay">
+  <!-- Modal Structure -->
+  <div *ngIf="showSuccessModal" class="modal-overlay">
     <div class="modal-content">
       <h2>{{ msg }}</h2>
       <p>Carburant: {{ carburant }}</p>

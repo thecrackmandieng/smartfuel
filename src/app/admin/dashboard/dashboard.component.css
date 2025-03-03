@@ -337,3 +337,29 @@
     font-size: 1.1em; /* Réduire encore la taille du texte */
   }
 }
+.fuel-info .icon-large {
+  color: green; /* Couleur par défaut */
+}
+
+.fuel-info.critical .icon-large,
+.fuel-info.critical .text-large {
+  color: red; /* Couleur pour les niveaux critiques */
+}
+.critical {
+  color: red;
+  font-weight: bold;
+}
+.chart-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.period-selector {
+  margin-left: auto; /* Pousse le sélecteur à droite */
+}
+
+.period-selector select {
+  padding: 5px;
+  font-size: 14px;
+}

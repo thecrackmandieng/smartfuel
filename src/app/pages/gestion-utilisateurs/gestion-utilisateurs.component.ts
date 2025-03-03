@@ -6,6 +6,7 @@ import { CrudService } from '../../services/crud.service';
 import { ChangeDetectorRef } from '@angular/core';
 import { AssignService } from '../../services/assign.service';
 import { Subscription } from 'rxjs';
+import { ActivatedRoute, Router } from '@angular/router';
 
 interface Utilisateur {
   _id: string;
@@ -22,6 +23,7 @@ interface Utilisateur {
   carburant?: string;
   litresAchetes?: number;
   montantDu?: number;
+  uid?: string;
 }
 
 interface Errors {
@@ -46,47 +48,104 @@ export class GestionUtilisateursComponent implements OnInit, OnDestroy {
   selectedUser: Utilisateur | null = null;
   assignCardCode: string = '';
   errors: Errors = {};
+  errorMessage: string = '';
+  userId: number = 0;
 
   private errorSubscription!: Subscription;
   private userSubscription!: Subscription;
+  private socketSubscription!: Subscription;
 
   constructor(
     private crudService: CrudService,
     private cdr: ChangeDetectorRef,
-    private assignService: AssignService
+    private assignService: AssignService,
+    private route: ActivatedRoute,
+    private router: Router
   ) {}
 
   ngOnInit() {
     this.getUsers();
     this.subscribeToWebSocket();
+    this.userId = +this.route.snapshot.paramMap.get('id')!;
+    this.assignService.connect();
   }
 
   ngOnDestroy() {
     this.errorSubscription.unsubscribe();
     this.userSubscription.unsubscribe();
+    if (this.socketSubscription) {
+      this.socketSubscription.unsubscribe();
+    }
   }
 
   private subscribeToWebSocket() {
-    this.errorSubscription = this.assignService.listenForErrors().subscribe(error => {
+    this.errorSubscription = this.assignService.listenForErrors().subscribe((error: string) => {
       console.error('Erreur WebSocket:', error);
       this.showModal('errorModal', error);
     });
-  
-    this.userSubscription = this.assignService.listenForScan().subscribe(data => {
-      if (data) {
-        console.log('Données reçues via WebSocket:', data);  // Affiche les données reçues
-        // Assure-toi que `data` contient bien un `uid` avant de tenter de le parser
-        if (data && data.uid) {
-          this.assignCardCode = data.uid;  // Affecte directement la valeur de `uid` si elle existe
-        } else {
-          console.warn('UID absent des données reçues:', data);
+
+    this.userSubscription = this.assignService.listenForScan().subscribe((userData: any) => {
+      if (userData) {
+        console.log('Données utilisateur reçues:', userData);
+        this.assignCardCode = userData.uid;
+      }
+    });
+
+    this.socketSubscription = this.assignService.messages.subscribe((message: { uid: string }) => {
+      console.log('📩 Message reçu via WebSocket :', message);
+
+      if (message.uid) {
+        try {
+          const extractedUidObject = JSON.parse(message.uid);
+          const extractedUid = extractedUidObject.uid;
+          console.log('✅ UID extrait :', extractedUid);
+
+          if (this.isValidUid(extractedUid)) {
+            this.assignCardCode = extractedUid;
+          } else {
+            console.log('❌ UID invalide ou non reconnu');
+            this.errorMessage = '❌ UID invalide ou non reconnu.';
+          }
+        } catch (error) {
+          console.error('Erreur lors de l\'extraction de l\'UID :', error);
         }
       }
     });
   }
-  
 
-  
+  isValidUid(uid: string): boolean {
+    const uidPattern = /^[A-Z0-9]{7,10}$/;
+    return uidPattern.test(uid);
+  }
+
+  assignCard(user: Utilisateur) {
+    this.selectedUser = user;
+    this.openModal('assignModal');
+  }
+
+  assignCardToUser() {
+    if (this.selectedUser && this.assignCardCode) {
+      console.log(`Carte ${this.assignCardCode} assignée à ${this.selectedUser.nom}`);
+
+      this.assignService.updateUid(this.selectedUser._id, this.assignCardCode).subscribe(
+        (response) => {
+          console.log('UID mis à jour avec succès:', response);
+          if (this.selectedUser) {
+            this.showModal('successModal', `Carte assignée à ${this.selectedUser.nom}`);
+          }
+          this.selectedUser = null;
+          this.assignCardCode = '';
+          this.closeModal('assignModal');
+        },
+        (error) => {
+          console.error('Erreur lors de la mise à jour de l\'UID:', error);
+          this.showModal('errorModal', 'Erreur lors de l\'assignation de la carte.');
+        }
+      );
+    } else {
+      console.error("Aucun utilisateur sélectionné ou carte non scannée !");
+    }
+  }
 
   validateForm(): boolean {
     this.errors = {};
@@ -297,7 +356,7 @@ export class GestionUtilisateursComponent implements OnInit, OnDestroy {
       if (!this.newUser.carburant) {
         this.errors['carburant'] = 'Le carburant est requis pour les clients.';
       }
-      if (this.newUser.montantDu === undefined || this.newUser.montantDu === null || this.newUser.montantDu < 0) {
+      if (this.newUser.montantDu === undefined || this.newUser.montantDu < 0) {
         this.errors['montantDu'] = 'Le montant dû doit être positif.';
       }
     }
@@ -368,26 +427,6 @@ export class GestionUtilisateursComponent implements OnInit, OnDestroy {
                 console.error("Erreur lors de la désarchivage de l'utilisateur", error);
             }
         );
-    }
-  }
-
-  assignCard(user: Utilisateur) {
-    console.log('Assignation de la carte:', this.assignCardCode, 'à l\'utilisateur:', user);
-    this.closeModal('assignModal');
-  }
-
-  resetSearch() {
-    this.searchTerm = '';
-    this.filteredUtilisateurs = [...this.utilisateurs];
-  }
-
-  openModal(modalId: string, user?: Utilisateur) {
-    const modal = document.getElementById(modalId);
-    if (modal) {
-        modal.style.display = 'block';
-    }
-    if (user) {
-        this.selectedUser = { ...user };
     }
   }
 
@@ -462,10 +501,12 @@ export class GestionUtilisateursComponent implements OnInit, OnDestroy {
   }
 
   showModal(modalId: string, message: string) {
-    this.modalMessage = message;
-    const modal = document.getElementById(modalId);
-    if (modal) {
-      modal.style.display = 'block';
+    if (modalId !== 'assignModal') {
+      this.modalMessage = message;
+      const modal = document.getElementById(modalId);
+      if (modal) {
+        modal.style.display = 'block';
+      }
     }
   }
 
@@ -475,23 +516,16 @@ export class GestionUtilisateursComponent implements OnInit, OnDestroy {
       modal.style.display = 'none';
     }
     this.selectedUser = null;
-    this.assignCardCode = ''; // Réinitialiser le code de la carte
+    this.assignCardCode = '';
   }
 
-  assignCardToUser() {
-    if (this.selectedUser && this.assignCardCode) {
-      const message = {
-        userId: this.selectedUser._id, // Inclure le userId dans le message
-        uid: this.assignCardCode
-      };
-
-      // Envoyer le message au serveur WebSocket
-      this.assignService.sendMessage(message);
-
-      // Fermer le modal après assignation
-      this.closeModal('assignModal');
-    } else {
-      console.warn("Aucun utilisateur sélectionné ou code de carte manquant !");
+  openModal(modalId: string, user?: Utilisateur) {
+    const modal = document.getElementById(modalId);
+    if (modal) {
+      modal.style.display = 'block';
+    }
+    if (user) {
+      this.selectedUser = { ...user };
     }
   }
 

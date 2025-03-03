@@ -101,7 +101,7 @@ export class ClientDashboardComponent implements OnInit, OnDestroy {
       const target = event.target as HTMLInputElement;
       const amount = parseFloat(target.value);
       if (isNaN(amount) || amount <= 0) {
-        this.setErrorMessage('❌ Montant invalide.');
+        this.setErrorMessage('❌ Montant invalide. Veuillez entrer un montant positif.');
       } else if (amount > this.soldeCompte) {
         this.setErrorMessage('❌ Votre solde est insuffisant.');
       } else {
@@ -113,7 +113,15 @@ export class ClientDashboardComponent implements OnInit, OnDestroy {
       const target = event.target as HTMLInputElement;
       const volume = parseFloat(target.value);
       if (!isNaN(volume) && elements.amountInput) {
-        this.renderer.setProperty(elements.amountInput, 'value', this.calculateAmount(volume).toFixed(2));
+        const amount = this.calculateAmount(volume);
+        this.renderer.setProperty(elements.amountInput, 'value', amount.toFixed(2));
+
+        // Vérifiez si le montant calculé est supérieur au solde
+        if (amount > this.soldeCompte) {
+          this.setErrorMessage('❌ Votre solde est insuffisant pour ce volume.');
+        } else {
+          this.setErrorMessage('');
+        }
       }
     });
 
