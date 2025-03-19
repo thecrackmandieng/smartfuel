@@ -454,26 +454,124 @@ color: #d1d5db;}
   opacity: 0.6;
 }
 
-.modal {
-  display: none; /* Caché par défaut */
-  position: fixed; /* Reste à la même position même en scroll */
-  z-index: 1; /* Au-dessus de tout le contenu */
+/* Style pour le modal */
+.modal1 {
+  display: none; /* Masqué par défaut */
+  position: fixed;
+  z-index: 1000;
   left: 0;
   top: 0;
-  width: 100%; /* Prend toute la largeur */
-  height: 100%; /* Prend toute la hauteur */
-  overflow: auto; /* Ajoute un défilement si nécessaire */
-  background-color: rgb(0,0,0); /* Couleur de fond */
-  background-color: rgba(0,0,0,0.4); /* Couleur de fond avec transparence */
+  width: 100%;
+  height: 100%;
+  overflow: auto;
+  background-color: rgba(0, 0, 0, 0.5);
+  padding-top: 60px;
 }
 
+/* Style pour le contenu du modal */
 .modal-content {
-  background-color: #fefefe;
-  margin: 15% auto; /* 15% du haut et centré */
+  background-color: #ffffff;
+  margin: 5% auto;
   padding: 20px;
-  border: 1px solid #888;
-  width: 80%; /* Peut être modifié pour la largeur souhaitée */
+  border-radius: 10px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+  max-width: 400px;
+  width: 90%;
+  animation: fadeIn 0.5s;
 }
+
+/* Animation pour le modal */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+/* Style pour le bouton de fermeture */
+.close {
+  color: #aaa;
+  float: right;
+  font-size: 24px;
+  font-weight: bold;
+  cursor: pointer;
+}
+
+.close:hover,
+.close:focus {
+  color: #000;
+  text-decoration: none;
+}
+
+/* Style pour le titre */
+h2 {
+  margin-top: 0;
+  color: #333;
+  font-family: 'Arial', sans-serif;
+}
+
+/* Style pour les labels */
+label {
+  display: block;
+  margin-top: 15px;
+  color: #555;
+  font-weight: bold;
+}
+
+/* Style pour les champs de saisie */
+.input-field {
+  width: 100%;
+  padding: 12px;
+  margin-top: 5px;
+  border: 1px solid #ddd;
+  border-radius: 6px;
+  box-sizing: border-box;
+  font-size: 16px;
+}
+
+/* Style pour le conteneur des boutons */
+.button-container {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 20px;
+}
+
+/* Style pour les boutons */
+.btn {
+  padding: 12px 20px;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 16px;
+  transition: background-color 0.3s ease;
+}
+
+.btn-assign {
+  background-color: #28a745;
+  color: white;
+}
+
+.btn-cancel {
+  background-color: #dc3545;
+  color: white;
+}
+
+.btn-assign:hover {
+  background-color: #218838;
+}
+
+.btn-cancel:hover {
+  background-color: #c82333;
+}
+
+.btn-assign:disabled,
+.btn-assign[disabled] {
+  background-color: #cccccc;
+  cursor: not-allowed;
+}
+
 
 .close {
   color: #aaa;

@@ -284,13 +284,16 @@
 
 <!-- gestion-utilisateurs.component.html -->
 <!-- Modal d'assignation de carte -->
-<div id="assignModal" class="modal">
+<div id="assignModal" class="modal1">
   <div class="modal-content">
     <span class="close" (click)="closeModal('assignModal')">&times;</span>
     <h2><i class="fas fa-user-plus"></i> Assigner une Carte</h2>
     <label>Code Carte :</label>
     <input type="text" [(ngModel)]="assignCardCode" class="input-field" readonly>
-    <button (click)="assignCardToUser()" class="btn btn-assign" [disabled]="!selectedUser || !assignCardCode">Assigner</button>
-    <button (click)="closeModal('assignModal')" class="btn btn-cancel">Annuler</button>
+    <div class="button-container">
+      <button (click)="assignCardToUser()" class="btn btn-assign" [disabled]="!selectedUser || !assignCardCode">Assigner</button>
+      <button (click)="closeModal('assignModal')" class="btn btn-cancel">Annuler</button>
+    </div>
   </div>
 </div>
+
